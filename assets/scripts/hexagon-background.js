@@ -9,15 +9,32 @@ class HexagonBackground {
         this.canvas = null;
         this.ctx = null;
         this.hexagons = [];
+        this.visibleHexagons = [];
         this.mouse = { x: 0, y: 0 };
+        this.lastMouseUpdate = 0;
         this.animationId = null;
         this.hexSize = 30;
         this.hexSpacing = 60;
-        this.glowRadius = 250; // Aumentado de 150 para 250
-        this.maxGlowIntensity = 0.075; // Reduzido em 50% para menos hexágonos acesos
-        this.waveSpeed = 0.005;
+        this.glowRadius = 250; // Aumentado para maior área de efeito
+        this.maxGlowIntensity = 0.12; // Aumentado para maior intensidade no hover
+        this.waveSpeed = 0.003; // Reduzido para menos cálculos
         this.time = 0;
-        this.blinkChance = 0.0003; // Chance de piscar por frame
+        this.blinkChance = 0.0002; // Reduzido para menos piscadas
+        
+        // Performance settings
+        this.lastFrameTime = 0;
+        this.targetFPS = 30; // Limitado a 30 FPS
+        this.frameInterval = 1000 / this.targetFPS;
+        this.mouseThrottleDelay = 16; // ~60fps para mouse
+        this.performanceMode = this.detectPerformanceMode();
+        
+        // Performance monitoring
+        this.frameCount = 0;
+        this.fpsHistory = [];
+        this.lastFPSCheck = 0;
+        this.performanceCheckInterval = 2000; // Check every 2 seconds
+        this.lowFPSThreshold = 20;
+        this.autoOptimizationEnabled = true;
         
         this.init();
     }
@@ -68,23 +85,50 @@ class HexagonBackground {
         this.generateHexagons();
     }
     
+    detectPerformanceMode() {
+        const screenArea = window.innerWidth * window.innerHeight;
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        
+        if (isMobile || screenArea > 3686400) { // > 2560x1440 (1440p)
+            return 'low';
+        } else if (screenArea > 2073600) { // > 1920x1080 (1080p)
+            return 'medium';
+        }
+        return 'high';
+    }
+    
     generateHexagons() {
         this.hexagons = [];
         
-        // Calcular espaçamento correto para padrão de colmeia
+        // Calcular espaçamento matemático correto para padrão hexagonal perfeito
         const hexWidth = this.hexSize * 2;
         const hexHeight = this.hexSize * Math.sqrt(3);
-        const horizontalSpacing = hexWidth * 0.75; // 3/4 da largura para encaixe perfeito
-        const verticalSpacing = hexHeight; // Altura completa do hexágono
+        // Espaçamento horizontal correto: 3/4 da largura do hexágono
+        const horizontalSpacing = this.hexSize * 1.5; // 3/2 * hexSize para simetria perfeita
+        // Espaçamento vertical correto: altura completa do hexágono
+        const verticalSpacing = hexHeight;
         
-        const cols = Math.ceil(window.innerWidth / horizontalSpacing) + 3;
-        const rows = Math.ceil(window.innerHeight / verticalSpacing) + 3;
+        // Reduzir densidade baseado no modo de performance
+        let densityMultiplier = 1;
+        if (this.performanceMode === 'low') {
+            densityMultiplier = 0.5; // 50% menos hexágonos
+        } else if (this.performanceMode === 'medium') {
+            densityMultiplier = 0.75; // 25% menos hexágonos
+        }
+        
+        const adjustedHorizontalSpacing = horizontalSpacing / densityMultiplier;
+        const adjustedVerticalSpacing = verticalSpacing / densityMultiplier;
+        
+        // Calcular quantidade com margem extra para cobertura completa
+        const extraMargin = this.hexSize * 2; // Margem extra baseada no tamanho do hexágono
+        const cols = Math.ceil((window.innerWidth + extraMargin * 2) / adjustedHorizontalSpacing) + 3;
+        const rows = Math.ceil((window.innerHeight + extraMargin * 2) / adjustedVerticalSpacing) + 3;
         
         for (let row = 0; row < rows; row++) {
             for (let col = 0; col < cols; col++) {
-                // Posicionamento correto para padrão de colmeia
-                const x = col * horizontalSpacing - horizontalSpacing;
-                const y = row * verticalSpacing + (col % 2) * (verticalSpacing / 2) - verticalSpacing;
+                // Posicionamento matemático correto para padrão hexagonal
+                const x = col * adjustedHorizontalSpacing - extraMargin;
+                const y = row * adjustedVerticalSpacing + (col % 2) * (adjustedVerticalSpacing / 2) - extraMargin;
                 
                 this.hexagons.push({
                     x: x,
@@ -93,36 +137,48 @@ class HexagonBackground {
                     col: col,
                     opacity: 0.1,
                     glowIntensity: 0,
-                    baseOpacity: 0.02 + Math.random() * 0.05,
+                    baseOpacity: 0.02 + Math.random() * 0.03, // Reduzido range
                     wavePhase: Math.random() * Math.PI * 2,
                     blinkTimer: 0,
                     isBlinking: false,
                     blinkIntensity: 0,
                     targetOpacity: 0.1,
-                    currentOpacity: 0.1
+                    currentOpacity: 0.1,
+                    isVisible: true // Para culling
                 });
             }
         }
     }
     
     bindEvents() {
-        // Mouse move event
+        // Throttled mouse move event
         document.addEventListener('mousemove', (e) => {
-            this.mouse.x = e.clientX;
-            this.mouse.y = e.clientY;
-        });
-        
-        // Touch events for mobile
-        document.addEventListener('touchmove', (e) => {
-            if (e.touches.length > 0) {
-                this.mouse.x = e.touches[0].clientX;
-                this.mouse.y = e.touches[0].clientY;
+            const now = performance.now();
+            if (now - this.lastMouseUpdate > this.mouseThrottleDelay) {
+                this.mouse.x = e.clientX;
+                this.mouse.y = e.clientY;
+                this.lastMouseUpdate = now;
             }
         });
         
-        // Resize event
+        // Touch events for mobile (também throttled)
+        document.addEventListener('touchmove', (e) => {
+            const now = performance.now();
+            if (now - this.lastMouseUpdate > this.mouseThrottleDelay && e.touches.length > 0) {
+                this.mouse.x = e.touches[0].clientX;
+                this.mouse.y = e.touches[0].clientY;
+                this.lastMouseUpdate = now;
+            }
+        });
+        
+        // Resize event (debounced)
+        let resizeTimeout;
         window.addEventListener('resize', () => {
-            this.resizeCanvas();
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                this.resizeCanvas();
+                this.regenerateHexagons(); // Recalcular hexágonos após resize
+            }, 250);
         });
         
         // Visibility change event for performance
@@ -140,30 +196,45 @@ class HexagonBackground {
         
         const ctx = this.ctx;
         
-        // Calculate hexagon points
-        const points = [];
-        for (let i = 0; i < 6; i++) {
-            const angle = (Math.PI / 3) * i;
-            points.push({
-                x: x + size * Math.cos(angle),
-                y: y + size * Math.sin(angle)
-            });
+        // Otimização: pular hexágonos muito transparentes
+        if (opacity < 0.01 && glowIntensity < 0.01) return;
+        
+        // Calculate hexagon points (cache para performance)
+        if (!this.hexagonPoints) {
+            this.hexagonPoints = [];
+            for (let i = 0; i < 6; i++) {
+                const angle = (Math.PI / 3) * i;
+                this.hexagonPoints.push({
+                    cos: Math.cos(angle),
+                    sin: Math.sin(angle)
+                });
+            }
         }
         
-        // Draw glow effect if intensity > 0
-        if (glowIntensity > 0) {
+        const points = this.hexagonPoints.map(p => ({
+            x: x + size * p.cos,
+            y: y + size * p.sin
+        }));
+        
+        // Draw glow effect apenas se significativo e no modo high performance
+        if (glowIntensity > 0.02 && this.performanceMode === 'high') {
             ctx.save();
             
-            // Create radial gradient for glow
-            const gradient = ctx.createRadialGradient(x, y, 0, x, y, size * 2);
-            gradient.addColorStop(0, `rgba(0, 255, 255, ${glowIntensity * 0.6})`);
-            gradient.addColorStop(0.5, `rgba(0, 255, 255, ${glowIntensity * 0.3})`);
-            gradient.addColorStop(1, 'rgba(0, 255, 255, 0)');
+            // Glow simplificado
+            ctx.shadowColor = `rgba(0, 255, 255, ${glowIntensity * 0.4})`;
+            ctx.shadowBlur = size * glowIntensity * 2;
             
-            ctx.fillStyle = gradient;
+            // Draw hexagon path para glow
             ctx.beginPath();
-            ctx.arc(x, y, size * 2, 0, Math.PI * 2);
-            ctx.fill();
+            ctx.moveTo(points[0].x, points[0].y);
+            for (let i = 1; i < points.length; i++) {
+                ctx.lineTo(points[i].x, points[i].y);
+            }
+            ctx.closePath();
+            
+            ctx.strokeStyle = `rgba(0, 255, 255, ${glowIntensity * 0.3})`;
+            ctx.lineWidth = 1;
+            ctx.stroke();
             
             ctx.restore();
         }
@@ -172,7 +243,7 @@ class HexagonBackground {
         ctx.save();
         
         // Calculate border intensity
-        const borderIntensity = Math.min(opacity + glowIntensity, 1);
+        const borderIntensity = Math.min(opacity + glowIntensity * 0.5, 1);
         
         // Draw hexagon path
         ctx.beginPath();
@@ -184,20 +255,10 @@ class HexagonBackground {
         
         ctx.closePath();
         
-        // Draw normal border
+        // Draw normal border (otimizado)
         ctx.strokeStyle = `rgba(0, 255, 255, ${borderIntensity})`;
-        ctx.lineWidth = 1 + (glowIntensity * 2);
+        ctx.lineWidth = 1 + (glowIntensity * 1.5); // Reduzido multiplicador
         ctx.stroke();
-        
-        // Add glow effect only to the border if intensity is high enough
-        if (glowIntensity > 0.05) {
-            ctx.shadowColor = 'rgba(0, 255, 255, 0.3)';
-            ctx.shadowBlur = 5 + (glowIntensity * 10);
-            ctx.strokeStyle = `rgba(0, 255, 255, ${borderIntensity})`;
-            ctx.lineWidth = 1 + (glowIntensity * 2);
-            ctx.stroke();
-            ctx.shadowBlur = 0;
-        }
         
         ctx.restore();
     }
@@ -205,7 +266,15 @@ class HexagonBackground {
     updateHexagons() {
         this.time += this.waveSpeed;
         
-        this.hexagons.forEach((hex, index) => {
+        // Viewport culling - apenas processar hexágonos visíveis
+        const margin = this.hexSize * 3; // Margem para suavizar entrada/saída
+        this.visibleHexagons = this.hexagons.filter(hex => {
+            hex.isVisible = hex.x > -margin && hex.x < window.innerWidth + margin &&
+                           hex.y > -margin && hex.y < window.innerHeight + margin;
+            return hex.isVisible;
+        });
+        
+        this.visibleHexagons.forEach((hex, index) => {
             // Efeito Wave baseado na posição e tempo
             const waveX = hex.col * 0.3;
             const waveY = hex.row * 0.2;
@@ -216,11 +285,13 @@ class HexagonBackground {
             const dy = this.mouse.y - hex.y;
             const distance = Math.sqrt(dx * dx + dy * dy);
             
-            // Efeito de iluminação do mouse (mais suave)
+            // Efeito de iluminação do mouse (intensificado)
             let mouseGlow = 0;
             if (distance < this.glowRadius) {
                 const intensity = 1 - (distance / this.glowRadius);
-                mouseGlow = intensity * this.maxGlowIntensity;
+                // Curva mais acentuada para efeito mais dramático
+                const enhancedIntensity = Math.pow(intensity, 0.7);
+                mouseGlow = enhancedIntensity * this.maxGlowIntensity;
             }
             
             // Sistema de piscadas aleatórias
@@ -241,8 +312,8 @@ class HexagonBackground {
                     hex.targetOpacity = hex.baseOpacity;
                 }
             } else {
-                // Combinar wave e mouse glow (reduzido em 50%)
-                hex.targetOpacity = hex.baseOpacity + Math.max(0, waveIntensity * 0.5) + mouseGlow;
+                // Combinar wave e mouse glow (intensificado)
+                hex.targetOpacity = hex.baseOpacity + Math.max(0, waveIntensity * 0.5) + mouseGlow * 1.5;
             }
             
             // Suavizar transições
@@ -258,17 +329,91 @@ class HexagonBackground {
         // Clear canvas
         this.ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
         
-        // Draw all hexagons
-        this.hexagons.forEach(hex => {
+        // Draw apenas hexágonos visíveis
+        this.visibleHexagons.forEach(hex => {
             this.drawHexagon(hex.x, hex.y, this.hexSize, hex.opacity, hex.glowIntensity);
         });
     }
     
     animate() {
-        this.updateHexagons();
-        this.render();
+        const now = performance.now();
+        const deltaTime = now - this.lastFrameTime;
+        
+        // Limitar FPS
+        if (deltaTime >= this.frameInterval) {
+            this.updateHexagons();
+            this.render();
+            this.lastFrameTime = now - (deltaTime % this.frameInterval);
+            
+            // Performance monitoring
+            this.monitorPerformance(now, deltaTime);
+        }
         
         this.animationId = requestAnimationFrame(() => this.animate());
+    }
+    
+    monitorPerformance(now, deltaTime) {
+        this.frameCount++;
+        
+        // Calculate FPS every 2 seconds
+        if (now - this.lastFPSCheck > this.performanceCheckInterval) {
+            const currentFPS = this.frameCount / (this.performanceCheckInterval / 1000);
+            this.fpsHistory.push(currentFPS);
+            
+            // Keep only last 5 measurements
+            if (this.fpsHistory.length > 5) {
+                this.fpsHistory.shift();
+            }
+            
+            // Auto-optimization based on performance
+            if (this.autoOptimizationEnabled && this.fpsHistory.length >= 3) {
+                const avgFPS = this.fpsHistory.reduce((a, b) => a + b, 0) / this.fpsHistory.length;
+                
+                if (avgFPS < this.lowFPSThreshold && this.performanceMode !== 'low') {
+                    console.log(`[HexagonBackground] Low FPS detected (${avgFPS.toFixed(1)}), switching to low performance mode`);
+                    this.degradePerformance();
+                } else if (avgFPS > this.lowFPSThreshold * 1.5 && this.performanceMode === 'low') {
+                    console.log(`[HexagonBackground] Performance improved (${avgFPS.toFixed(1)}), switching to medium performance mode`);
+                    this.improvePerformance();
+                }
+            }
+            
+            this.frameCount = 0;
+            this.lastFPSCheck = now;
+        }
+    }
+    
+    degradePerformance() {
+        if (this.performanceMode === 'high') {
+            this.performanceMode = 'medium';
+            this.targetFPS = 25;
+        } else if (this.performanceMode === 'medium') {
+            this.performanceMode = 'low';
+            this.targetFPS = 20;
+            this.maxGlowIntensity *= 0.5; // Reduzir ainda mais o glow
+        }
+        
+        this.frameInterval = 1000 / this.targetFPS;
+        this.regenerateHexagons();
+    }
+    
+    improvePerformance() {
+        if (this.performanceMode === 'low') {
+            this.performanceMode = 'medium';
+            this.targetFPS = 25;
+            this.maxGlowIntensity *= 2; // Restaurar glow
+        } else if (this.performanceMode === 'medium') {
+            this.performanceMode = 'high';
+            this.targetFPS = 30;
+        }
+        
+        this.frameInterval = 1000 / this.targetFPS;
+        this.regenerateHexagons();
+    }
+    
+    regenerateHexagons() {
+        // Regenerar hexágonos com nova densidade
+        this.generateHexagons();
     }
     
     stopAnimation() {
