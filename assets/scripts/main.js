@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeYouTubeIntegration();
     initializeSmoothScrolling();
     initializeIntersectionObserver();
-    calculateChannelAge();
+    displayChannelAge();
 });
 
 /**
@@ -141,7 +141,8 @@ function triggerGlitch(element) {
  * Metrics Animation
  */
 function initializeMetricsAnimation() {
-    const metricNumbers = document.querySelectorAll('.metric-number');
+    // Selecionar apenas elementos com data-target (excluindo o elemento de idade do canal)
+    const metricNumbers = document.querySelectorAll('.metric-number[data-target]');
     
     function animateMetrics() {
         if (metricsAnimated) return;
@@ -195,58 +196,62 @@ function initializeMetricsAnimation() {
 /**
  * Calculate Channel Age
  */
-function calculateChannelAge() {
-    const channelAgeElement = document.getElementById('channel-age');
-    if (!channelAgeElement) {
-        console.error('Element with ID "channel-age" not found');
+function displayChannelAge() {
+    // Buscar os elementos
+    const ageElement = document.getElementById('channel-age-display');
+    const labelElement = ageElement ? ageElement.parentElement.querySelector('.metric-label') : null;
+    
+    if (!ageElement || !labelElement) {
+        console.error('Elementos de idade do canal não encontrados');
         return;
     }
     
-    const creationDate = new Date('2021-08-31');
-    const currentDate = new Date();
+    // Data de criação: 31 de agosto de 2021
+    const creationYear = 2021;
+    const creationMonth = 8; // Agosto
+    const creationDay = 31;
     
-    // Check if dates are valid
-    if (isNaN(creationDate.getTime()) || isNaN(currentDate.getTime())) {
-        console.error('Invalid date in calculateChannelAge');
-        channelAgeElement.textContent = '0A 0M 0D';
-        return;
+    // Data atual
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth() + 1; // getMonth() retorna 0-11
+    const currentDay = now.getDate();
+    
+    // Calcular diferença simples
+    let yearsDiff = currentYear - creationYear;
+    let monthsDiff = currentMonth - creationMonth;
+    let daysDiff = currentDay - creationDay;
+    
+    // Ajustar se o dia atual é menor que o dia de criação
+    if (daysDiff < 0) {
+        monthsDiff = monthsDiff - 1;
+        // Pegar o último dia do mês anterior
+        const lastMonth = new Date(currentYear, currentMonth - 1, 0);
+        daysDiff = daysDiff + lastMonth.getDate();
     }
     
-    // Calculate exact difference in years, months, and days
-    let years = currentDate.getFullYear() - creationDate.getFullYear();
-    let months = currentDate.getMonth() - creationDate.getMonth();
-    let days = currentDate.getDate() - creationDate.getDate();
-    
-    // Adjust for negative days
-    if (days < 0) {
-        months--;
-        const lastMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 0);
-        days += lastMonth.getDate();
+    // Ajustar se o mês atual é menor que o mês de criação
+    if (monthsDiff < 0) {
+        yearsDiff = yearsDiff - 1;
+        monthsDiff = monthsDiff + 12;
     }
     
-    // Adjust for negative months
-    if (months < 0) {
-        years--;
-        months += 12;
-    }
+    // Garantir valores não negativos
+    const finalYears = Math.max(0, yearsDiff);
+    const finalMonths = Math.max(0, monthsDiff);
+    const finalDays = Math.max(0, daysDiff);
     
-    // Ensure all values are valid numbers
-    if (isNaN(years) || isNaN(months) || isNaN(days) || years < 0 || months < 0 || days < 0) {
-        console.error('Invalid calculation in calculateChannelAge');
-        channelAgeElement.textContent = '0A 0M 0D';
-        return;
-    }
+    // Valor principal: apenas anos
+    const mainText = finalYears + (finalYears === 1 ? ' ano' : ' anos');
     
-    // Set the final value immediately to prevent any NaN display
-    const finalText = `${years}A ${months}M ${days}D`;
-    channelAgeElement.textContent = finalText;
+    // Detalhes completos na descrição
+    const detailText = finalYears + 'A ' + finalMonths + 'M ' + finalDays + 'D';
     
-    // Add a subtle animation effect
-    channelAgeElement.style.opacity = '0';
-    setTimeout(() => {
-        channelAgeElement.style.transition = 'opacity 0.5s ease-in-out';
-        channelAgeElement.style.opacity = '1';
-    }, 100);
+    // Definir os textos nos elementos
+    ageElement.textContent = mainText;
+    labelElement.textContent = detailText;
+    
+    console.log('Idade do canal calculada:', mainText, '(' + detailText + ')');
 }
 
 /**

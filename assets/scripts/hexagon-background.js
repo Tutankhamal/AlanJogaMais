@@ -36,6 +36,17 @@ class HexagonBackground {
         this.lowFPSThreshold = 20;
         this.autoOptimizationEnabled = true;
         
+        // Sistema de densidade adaptativa
+        this.adaptiveDensity = {
+            enabled: true,
+            currentLevel: 1.0, // 1.0 = densidade completa
+            targetLevel: 1.0,
+            adjustmentSpeed: 0.02, // Velocidade de ajuste suave
+            minLevel: 0.3, // Densidade mínima (30%)
+            maxLevel: 1.0, // Densidade máxima (100%)
+            lastAdjustment: 0
+        };
+        
         this.init();
     }
     
@@ -88,10 +99,45 @@ class HexagonBackground {
     detectPerformanceMode() {
         const screenArea = window.innerWidth * window.innerHeight;
         const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+        const pixelRatio = window.devicePixelRatio || 1;
         
-        if (isMobile || screenArea > 3686400) { // > 2560x1440 (1440p)
+        // Detecção mais inteligente considerando múltiplos fatores
+        let performanceScore = 100; // Começar com pontuação alta
+        
+        // Penalizar dispositivos móveis
+        if (isMobile || isTouch) {
+            performanceScore -= 40;
+        }
+        
+        // Penalizar telas muito grandes (mais pixels para renderizar)
+        if (screenArea > 3686400) { // > 2560x1440
+            performanceScore -= 30;
+        } else if (screenArea > 2073600) { // > 1920x1080
+            performanceScore -= 15;
+        }
+        
+        // Penalizar pixel ratio alto (telas retina)
+        if (pixelRatio > 2) {
+            performanceScore -= 20;
+        } else if (pixelRatio > 1.5) {
+            performanceScore -= 10;
+        }
+        
+        // Verificar memória disponível se possível
+        if (navigator.deviceMemory && navigator.deviceMemory < 4) {
+            performanceScore -= 25;
+        }
+        
+        // Verificar número de cores do processador
+        if (navigator.hardwareConcurrency && navigator.hardwareConcurrency < 4) {
+            performanceScore -= 15;
+        }
+        
+        // Determinar modo baseado na pontuação
+        if (performanceScore < 40) {
             return 'low';
-        } else if (screenArea > 2073600) { // > 1920x1080 (1080p)
+        } else if (performanceScore < 70) {
             return 'medium';
         }
         return 'high';
@@ -100,44 +146,93 @@ class HexagonBackground {
     generateHexagons() {
         this.hexagons = [];
         
+        // Detectar se é dispositivo móvel para aplicar correções específicas
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+                         'ontouchstart' in window || 
+                         window.innerWidth <= 768;
+        
         // Calcular espaçamento matemático correto para padrão hexagonal perfeito
         const hexWidth = this.hexSize * 2;
         const hexHeight = this.hexSize * Math.sqrt(3);
-        // Espaçamento horizontal correto: 3/4 da largura do hexágono
-        const horizontalSpacing = this.hexSize * 1.5; // 3/2 * hexSize para simetria perfeita
+        
+        // Espaçamento horizontal correto: 3/4 da largura do hexágono (padrão matemático hexagonal)
+        const horizontalSpacing = this.hexSize * 1.5;
         // Espaçamento vertical correto: altura completa do hexágono
         const verticalSpacing = hexHeight;
         
-        // Reduzir densidade baseado no modo de performance
-        let densityMultiplier = 1;
-        if (this.performanceMode === 'low') {
-            densityMultiplier = 0.5; // 50% menos hexágonos
-        } else if (this.performanceMode === 'medium') {
-            densityMultiplier = 0.75; // 25% menos hexágonos
+        // CORREÇÃO MOBILE: Estratégia diferenciada para dispositivos móveis
+        let effectiveHexSize = this.hexSize;
+        let skipPattern = 1; // Renderizar todos os hexágonos por padrão
+        let useAdaptiveDensity = true;
+        
+        if (isMobile) {
+            // Em mobile, priorizar cobertura completa sobre performance
+            effectiveHexSize = this.hexSize * 0.7; // Hexágonos menores para melhor performance
+            skipPattern = 1; // SEMPRE renderizar todos para evitar lacunas
+            useAdaptiveDensity = false; // Desabilitar densidade adaptativa em mobile
+            console.log('[HexagonBackground] Modo mobile detectado - priorizando cobertura completa');
+        } else {
+            // Desktop: usar estratégia de otimização normal
+            if (this.performanceMode === 'low') {
+                effectiveHexSize = this.hexSize * 0.8;
+                skipPattern = 2;
+            } else if (this.performanceMode === 'medium') {
+                effectiveHexSize = this.hexSize * 0.9;
+                skipPattern = 1;
+            }
         }
         
-        const adjustedHorizontalSpacing = horizontalSpacing / densityMultiplier;
-        const adjustedVerticalSpacing = verticalSpacing / densityMultiplier;
+        // Atualizar configuração de densidade adaptativa
+        this.adaptiveDensity.enabled = useAdaptiveDensity;
+        
+        // Recalcular espaçamentos com tamanho efetivo
+        const effectiveHorizontalSpacing = effectiveHexSize * 1.5;
+        const effectiveVerticalSpacing = effectiveHexSize * Math.sqrt(3);
+        
+        // CORREÇÃO: Margem extra maior para mobile para garantir cobertura nas bordas
+        const baseMargin = effectiveHexSize * 3;
+        const extraMargin = isMobile ? baseMargin * 1.5 : baseMargin; // 50% mais margem em mobile
         
         // Calcular quantidade com margem extra para cobertura completa
-        const extraMargin = this.hexSize * 2; // Margem extra baseada no tamanho do hexágono
-        const cols = Math.ceil((window.innerWidth + extraMargin * 2) / adjustedHorizontalSpacing) + 3;
-        const rows = Math.ceil((window.innerHeight + extraMargin * 2) / adjustedVerticalSpacing) + 3;
+        const cols = Math.ceil((window.innerWidth + extraMargin * 2) / effectiveHorizontalSpacing) + (isMobile ? 6 : 4);
+        const rows = Math.ceil((window.innerHeight + extraMargin * 2) / effectiveVerticalSpacing) + (isMobile ? 6 : 4);
         
         for (let row = 0; row < rows; row++) {
             for (let col = 0; col < cols; col++) {
+                // Skip pattern para otimização (mantém simetria)
+                // Em mobile, sempre renderizar para evitar lacunas
+                if (!isMobile) {
+                    const densityCheck = this.shouldRenderHexagon(row, col, skipPattern);
+                    if (!densityCheck) {
+                        continue;
+                    }
+                }
+                
                 // Posicionamento matemático correto para padrão hexagonal
-                const x = col * adjustedHorizontalSpacing - extraMargin;
-                const y = row * adjustedVerticalSpacing + (col % 2) * (adjustedVerticalSpacing / 2) - extraMargin;
+                let x = col * effectiveHorizontalSpacing - extraMargin;
+                let y = row * effectiveVerticalSpacing + (col % 2) * (effectiveVerticalSpacing / 2) - extraMargin;
+                
+                // CORREÇÃO MOBILE: Ajustar posicionamento para garantir cobertura nas bordas
+                if (isMobile) {
+                    // Pequeno ajuste para garantir que hexágonos nas bordas cubram completamente
+                    const edgeAdjustment = effectiveHexSize * 0.1;
+                    
+                    // Ajustar hexágonos próximos às bordas
+                    if (col === 0) x -= edgeAdjustment; // Borda esquerda
+                    if (row === 0) y -= edgeAdjustment; // Borda superior
+                    if (col === cols - 1) x += edgeAdjustment; // Borda direita
+                    if (row === rows - 1) y += edgeAdjustment; // Borda inferior
+                }
                 
                 this.hexagons.push({
                     x: x,
                     y: y,
                     row: row,
                     col: col,
+                    size: effectiveHexSize, // Tamanho individual do hexágono
                     opacity: 0.1,
                     glowIntensity: 0,
-                    baseOpacity: 0.02 + Math.random() * 0.03, // Reduzido range
+                    baseOpacity: 0.02 + Math.random() * 0.03,
                     wavePhase: Math.random() * Math.PI * 2,
                     blinkTimer: 0,
                     isBlinking: false,
@@ -266,11 +361,21 @@ class HexagonBackground {
     updateHexagons() {
         this.time += this.waveSpeed;
         
-        // Viewport culling - apenas processar hexágonos visíveis
-        const margin = this.hexSize * 3; // Margem para suavizar entrada/saída
+        // Viewport culling melhorado - garantir cobertura completa sem lacunas
+        // CORREÇÃO: Margem mais generosa para mobile para evitar lacunas
+        const isMobile = window.innerWidth <= 768;
+        const baseDynamicMargin = Math.max(this.hexSize * 4, 100);
+        const mobileMultiplier = isMobile ? 1.8 : 1.0; // 80% mais margem em mobile
+        const margin = baseDynamicMargin * mobileMultiplier;
+        
         this.visibleHexagons = this.hexagons.filter(hex => {
-            hex.isVisible = hex.x > -margin && hex.x < window.innerWidth + margin &&
-                           hex.y > -margin && hex.y < window.innerHeight + margin;
+            const hexSize = hex.size || this.hexSize;
+            // Usar margem baseada no tamanho individual do hexágono
+            const dynamicMargin = hexSize * 2 * mobileMultiplier;
+            hex.isVisible = hex.x > -margin - dynamicMargin && 
+                           hex.x < window.innerWidth + margin + dynamicMargin &&
+                           hex.y > -margin - dynamicMargin && 
+                           hex.y < window.innerHeight + margin + dynamicMargin;
             return hex.isVisible;
         });
         
@@ -331,7 +436,9 @@ class HexagonBackground {
         
         // Draw apenas hexágonos visíveis
         this.visibleHexagons.forEach(hex => {
-            this.drawHexagon(hex.x, hex.y, this.hexSize, hex.opacity, hex.glowIntensity);
+            // Usar o tamanho individual do hexágono se disponível, senão usar o padrão
+            const hexSize = hex.size || this.hexSize;
+            this.drawHexagon(hex.x, hex.y, hexSize, hex.opacity, hex.glowIntensity);
         });
     }
     
@@ -369,10 +476,14 @@ class HexagonBackground {
             if (this.autoOptimizationEnabled && this.fpsHistory.length >= 3) {
                 const avgFPS = this.fpsHistory.reduce((a, b) => a + b, 0) / this.fpsHistory.length;
                 
-                if (avgFPS < this.lowFPSThreshold && this.performanceMode !== 'low') {
+                // Atualizar densidade adaptativa
+                this.updateAdaptiveDensity(avgFPS);
+                
+                // Otimização de modo de performance (menos agressiva)
+                if (avgFPS < this.lowFPSThreshold * 0.7 && this.performanceMode !== 'low') {
                     console.log(`[HexagonBackground] Low FPS detected (${avgFPS.toFixed(1)}), switching to low performance mode`);
                     this.degradePerformance();
-                } else if (avgFPS > this.lowFPSThreshold * 1.5 && this.performanceMode === 'low') {
+                } else if (avgFPS > this.lowFPSThreshold * 1.8 && this.performanceMode === 'low') {
                     console.log(`[HexagonBackground] Performance improved (${avgFPS.toFixed(1)}), switching to medium performance mode`);
                     this.improvePerformance();
                 }
@@ -387,10 +498,13 @@ class HexagonBackground {
         if (this.performanceMode === 'high') {
             this.performanceMode = 'medium';
             this.targetFPS = 25;
+            console.log('[HexagonBackground] Degradando para modo medium');
         } else if (this.performanceMode === 'medium') {
             this.performanceMode = 'low';
             this.targetFPS = 20;
             this.maxGlowIntensity *= 0.5; // Reduzir ainda mais o glow
+            this.waveSpeed *= 0.5; // Reduzir velocidade da animação
+            console.log('[HexagonBackground] Degradando para modo low');
         }
         
         this.frameInterval = 1000 / this.targetFPS;
@@ -402,13 +516,74 @@ class HexagonBackground {
             this.performanceMode = 'medium';
             this.targetFPS = 25;
             this.maxGlowIntensity *= 2; // Restaurar glow
+            this.waveSpeed *= 2; // Restaurar velocidade da animação
+            console.log('[HexagonBackground] Melhorando para modo medium');
         } else if (this.performanceMode === 'medium') {
             this.performanceMode = 'high';
             this.targetFPS = 30;
+            console.log('[HexagonBackground] Melhorando para modo high');
         }
         
         this.frameInterval = 1000 / this.targetFPS;
         this.regenerateHexagons();
+    }
+    
+    shouldRenderHexagon(row, col, baseSkipPattern) {
+        // Skip pattern básico
+        if (baseSkipPattern > 1 && (row + col) % baseSkipPattern !== 0) {
+            return false;
+        }
+        
+        // Densidade adaptativa - usar padrão determinístico para manter simetria
+        // CORREÇÃO: Aplicar apenas se não for mobile e estiver habilitada
+        if (this.adaptiveDensity.enabled && this.adaptiveDensity.currentLevel < 1.0) {
+            // Verificar se é mobile para evitar aplicar densidade adaptativa
+            const isMobile = window.innerWidth <= 768 || 
+                           /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            
+            if (!isMobile) {
+                // Criar padrão baseado em hash da posição para consistência
+                const hash = (row * 73 + col * 37) % 100;
+                const threshold = this.adaptiveDensity.currentLevel * 100;
+                return hash < threshold;
+            }
+        }
+        
+        return true;
+    }
+    
+    updateAdaptiveDensity(currentFPS) {
+        if (!this.adaptiveDensity.enabled) return;
+        
+        const now = performance.now();
+        
+        // Ajustar densidade baseado no FPS
+        if (currentFPS < this.lowFPSThreshold) {
+            // FPS baixo - reduzir densidade
+            this.adaptiveDensity.targetLevel = Math.max(
+                this.adaptiveDensity.minLevel,
+                this.adaptiveDensity.targetLevel - 0.1
+            );
+        } else if (currentFPS > this.lowFPSThreshold * 1.5) {
+            // FPS bom - aumentar densidade gradualmente
+            this.adaptiveDensity.targetLevel = Math.min(
+                this.adaptiveDensity.maxLevel,
+                this.adaptiveDensity.targetLevel + 0.05
+            );
+        }
+        
+        // Suavizar transição de densidade
+        const diff = this.adaptiveDensity.targetLevel - this.adaptiveDensity.currentLevel;
+        if (Math.abs(diff) > 0.01) {
+            this.adaptiveDensity.currentLevel += diff * this.adaptiveDensity.adjustmentSpeed;
+            
+            // Regenerar hexágonos se mudança significativa
+            if (Math.abs(diff) > 0.1 && now - this.adaptiveDensity.lastAdjustment > 1000) {
+                this.regenerateHexagons();
+                this.adaptiveDensity.lastAdjustment = now;
+                console.log(`[HexagonBackground] Densidade adaptativa: ${(this.adaptiveDensity.currentLevel * 100).toFixed(1)}%`);
+            }
+        }
     }
     
     regenerateHexagons() {
