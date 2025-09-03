@@ -73,8 +73,10 @@
     <nav class="navbar" role="navigation" aria-label="Navegação principal">
         <div class="nav-container">
             <div class="nav-logo">
-                <img src="./assets/images/main_logo.webp" alt="Alan Joga+ Logo" width="50" height="50">
-                <span class="nav-brand">Alan Joga+</span>
+                <a href="./index.html" class="nav-logo-link">
+                    <img src="./assets/images/main_logo.webp" alt="Alan Joga+ Logo" width="50" height="50">
+                    <span class="nav-brand">Alan Joga+</span>
+                </a>
             </div>
             
             <button class="nav-toggle" aria-label="Abrir menu de navegação" aria-expanded="false">
@@ -88,16 +90,16 @@
                     <a href="#home" class="nav-link active" role="menuitem" aria-current="page">Início</a>
                 </li>
                 <li class="nav-item" role="none">
-                    <a href="#loja" class="nav-link" role="menuitem">Loja</a>
+                    <a href="./shop.html" class="nav-link" role="menuitem">Loja</a>
                 </li>
                 <li class="nav-item" role="none">
-                    <a href="#canal" class="nav-link" role="menuitem">Canal</a>
+                    <a href="./canal.html" class="nav-link" role="menuitem">Canal</a>
                 </li>
                 <li class="nav-item" role="none">
-                    <a href="#sobre" class="nav-link" role="menuitem">Sobre</a>
+                    <a href="./sobre.html" class="nav-link" role="menuitem">Sobre</a>
                 </li>
                 <li class="nav-item" role="none">
-                    <a href="#contato" class="nav-link" role="menuitem">Contato</a>
+                    <a href="./contato.html" class="nav-link" role="menuitem">Contato</a>
                 </li>
             </ul>
         </div>
@@ -168,6 +170,31 @@
             </div>
         </section>
         
+        <!-- Shop Section -->
+        <section id="loja" class="shop-section" aria-labelledby="shop-title">
+            <div class="container">
+                <h2 id="shop-title" class="section-title">Loja Alan Joga+</h2>
+                <p class="shop-description">Produtos exclusivos para verdadeiros gamers retrô! Canecas, camisetas e muito mais com designs únicos inspirados nos clássicos dos videogames.</p>
+                
+                <div class="shop-cta-container">
+                    <div class="shop-highlight">
+                        <div class="shop-icon">
+                            <i class="fas fa-shopping-bag" aria-hidden="true"></i>
+                        </div>
+                        <h3 class="shop-highlight-title">Produtos Exclusivos</h3>
+                        <p class="shop-highlight-text">Descubra nossa coleção completa de produtos temáticos com designs únicos e qualidade premium.</p>
+                    </div>
+                    
+                    <a href="./shop.html" class="cta-button cta-primary shop-main-cta" aria-label="Visitar loja completa">
+                        <i class="fas fa-store" aria-hidden="true"></i>
+                        <span>Visitar Loja</span>
+                    </a>
+                    
+                    <p class="shop-note">Entrega para todo o Brasil • Pagamento seguro via Mercado Pago</p>
+                </div>
+            </div>
+        </section>
+        
         <!-- Videos Section -->
         <section id="videos" class="videos-section" aria-labelledby="videos-title">
             <div class="container">
@@ -217,6 +244,11 @@
             </div>
         </div>
     </footer>
+    
+    <!-- Back to Top Button -->
+    <button id="back-to-top" class="back-to-top" aria-label="Voltar ao topo" title="Voltar ao topo">
+        <i class="fas fa-chevron-up" aria-hidden="true"></i>
+    </button>
     
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/lite-youtube-embed@0.3.2/src/lite-yt-embed.js"></script>

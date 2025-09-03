@@ -316,7 +316,7 @@ class HexagonBackground {
             ctx.save();
             
             // Glow simplificado
-            ctx.shadowColor = `rgba(0, 255, 255, ${glowIntensity * 0.4})`;
+            ctx.shadowColor = `rgba(118, 231, 255, ${glowIntensity * 0.4})`;
             ctx.shadowBlur = size * glowIntensity * 2;
             
             // Draw hexagon path para glow
@@ -327,7 +327,7 @@ class HexagonBackground {
             }
             ctx.closePath();
             
-            ctx.strokeStyle = `rgba(0, 255, 255, ${glowIntensity * 0.3})`;
+            ctx.strokeStyle = `rgba(118, 231, 255, ${glowIntensity * 0.3})`;
             ctx.lineWidth = 1;
             ctx.stroke();
             
@@ -351,7 +351,7 @@ class HexagonBackground {
         ctx.closePath();
         
         // Draw normal border (otimizado)
-        ctx.strokeStyle = `rgba(0, 255, 255, ${borderIntensity})`;
+        ctx.strokeStyle = `rgba(118, 231, 255, ${borderIntensity})`;
         ctx.lineWidth = 1 + (glowIntensity * 1.5); // Reduzido multiplicador
         ctx.stroke();
         

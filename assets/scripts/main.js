@@ -121,12 +121,12 @@ function initializeGlitchEffects() {
         heroLogo.addEventListener('mouseenter', function() {
             this.style.filter = 'hue-rotate(180deg) saturate(2)';
             setTimeout(() => {
-                this.style.filter = 'drop-shadow(0 0 50px rgba(0, 255, 255, 0.8))';
+                this.style.filter = 'drop-shadow(0 0 50px rgba(118, 231, 255, 0.8))';
             }, 150);
         });
         
         heroLogo.addEventListener('mouseleave', function() {
-            this.style.filter = 'drop-shadow(0 0 30px rgba(0, 255, 255, 0.3))';
+            this.style.filter = 'drop-shadow(0 0 30px rgba(118, 231, 255, 0.3))';
         });
     }
 }
@@ -202,7 +202,10 @@ function displayChannelAge() {
     const labelElement = ageElement ? ageElement.parentElement.querySelector('.metric-label') : null;
     
     if (!ageElement || !labelElement) {
-        console.error('Elementos de idade do canal não encontrados');
+        // Only log error if we're on the index page
+        if (document.getElementById('indexvideo-feed')) {
+            console.error('Elementos de idade do canal não encontrados');
+        }
         return;
     }
     
@@ -258,6 +261,13 @@ function displayChannelAge() {
  * YouTube Integration
  */
 function initializeYouTubeIntegration() {
+    const container = document.getElementById('indexvideo-feed');
+    
+    // Only run if we're on the index page and the container exists
+    if (!container) {
+        return;
+    }
+    
     const feedUrl = 'https://api.rss2json.com/v1/api.json?rss_url=https://www.youtube.com/feeds/videos.xml?channel_id=UCrejM1xjPRDHwusX6ILS4Wg';
     
     fetch(feedUrl)
@@ -268,8 +278,6 @@ function initializeYouTubeIntegration() {
             return response.json();
         })
         .then(data => {
-            const container = document.getElementById('indexvideo-feed');
-            
             if (!data.items || !Array.isArray(data.items)) {
                 showVideoError(container, 'Não foi possível carregar os vídeos.');
                 return;
@@ -326,6 +334,11 @@ function initializeYouTubeIntegration() {
 }
 
 function showVideoError(container, message) {
+    if (!container) {
+        console.error('Container não encontrado para exibir erro:', message);
+        return;
+    }
+    
     container.innerHTML = `
         <div class="video-error">
             <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
@@ -545,7 +558,7 @@ style.textContent = `
     }
     
     .retry-button {
-        background: rgba(0, 255, 255, 0.1);
+        background: rgba(118, 231, 255, 0.1);
         border: 2px solid #00ffff;
         color: #00ffff;
         padding: 10px 20px;
@@ -556,11 +569,75 @@ style.textContent = `
     }
     
     .retry-button:hover {
-        background: rgba(0, 255, 255, 0.2);
+        background: rgba(118, 231, 255, 0.2);
         transform: translateY(-2px);
     }
 `;
 document.head.appendChild(style);
+
+/**
+ * Initialize Back to Top Button
+ */
+function initializeBackToTop() {
+    const backToTopButton = document.getElementById('back-to-top');
+    const footer = document.querySelector('.footer');
+    
+    if (!backToTopButton) return;
+    
+    // Calculate and set button position above footer
+    function updateButtonPosition() {
+        if (footer) {
+            const footerRect = footer.getBoundingClientRect();
+            const windowHeight = window.innerHeight;
+            const footerTop = footerRect.top + window.pageYOffset;
+            const currentScrollY = window.pageYOffset;
+            const viewportBottom = currentScrollY + windowHeight;
+            
+            // If footer is visible in viewport, position button above it
+            if (footerTop < viewportBottom) {
+                const distanceFromBottom = Math.max(30, windowHeight - footerRect.top + 30);
+                backToTopButton.style.bottom = distanceFromBottom + 'px';
+            } else {
+                // Default position when footer is not visible
+                backToTopButton.style.bottom = '120px';
+            }
+        }
+    }
+    
+    // Show/hide button based on scroll position
+    function toggleBackToTopButton() {
+        updateButtonPosition();
+        
+        if (window.pageYOffset > 300) {
+            backToTopButton.classList.add('show');
+        } else {
+            backToTopButton.classList.remove('show');
+        }
+    }
+    
+    // Smooth scroll to top
+    function scrollToTop() {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    }
+    
+    // Event listeners
+    window.addEventListener('scroll', debounce(toggleBackToTopButton, 100));
+    backToTopButton.addEventListener('click', scrollToTop);
+    
+    // Keyboard accessibility
+    backToTopButton.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            scrollToTop();
+        }
+    });
+}
+
+// Initialize back to top button
+initializeBackToTop();
 
 // Export functions for potential external use
 if (typeof module !== 'undefined' && module.exports) {
