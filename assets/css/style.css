@@ -1622,7 +1622,7 @@ body {
     font-size: 1.2rem;
     color: #cccccc;
     margin-bottom: 3rem;
-    font-weight: 400;
+    font-weight: 600;
 }
 
 .products-grid {
@@ -1777,6 +1777,7 @@ body {
     color: #aaa;
     font-size: 0.9rem;
     font-style: italic;
+    font-weight: 600;
 }
 
 /* ===== SHOP RESPONSIVE ===== */
@@ -1866,6 +1867,7 @@ body {
     font-size: 1rem;
     line-height: 1.6;
     margin-bottom: 0;
+    font-weight: 600;
 }
 
 .shop-main-cta {
