@@ -18,6 +18,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeYouTubeIntegration();
     initializeSmoothScrolling();
     initializeIntersectionObserver();
+    initializeDevelopmentModal();
     displayChannelAge();
 });
 
@@ -704,6 +705,74 @@ function initializeBackToTop() {
 // Initialize back to top button
 initializeBackToTop();
 
+/**
+ * Development Modal Functions
+ */
+function initializeDevelopmentModal() {
+    const modal = document.getElementById('dev-modal');
+    const closeBtn = document.getElementById('close-modal');
+    const understandBtn = document.getElementById('understand-btn');
+    const overlay = document.querySelector('.dev-modal-overlay');
+    
+    // Only initialize if modal exists (shop.html page)
+    if (!modal) return;
+    
+    // Always show modal when page loads
+    showDevelopmentModal();
+    
+    // Close modal events
+    if (closeBtn) {
+        closeBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            hideDevelopmentModal();
+        });
+    }
+    
+    if (understandBtn) {
+        understandBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            hideDevelopmentModal();
+        });
+    }
+    
+    if (overlay) {
+        overlay.addEventListener('click', function(e) {
+            if (e.target === overlay) {
+                hideDevelopmentModal();
+            }
+        });
+    }
+    
+    // Close modal with Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && modal && !modal.classList.contains('hidden')) {
+            hideDevelopmentModal();
+        }
+    });
+}
+
+function showDevelopmentModal() {
+    const modal = document.getElementById('dev-modal');
+    if (modal) {
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+        
+        // Focus management for accessibility
+        const closeBtn = document.getElementById('close-modal');
+        if (closeBtn) {
+            setTimeout(() => closeBtn.focus(), 100);
+        }
+    }
+}
+
+function hideDevelopmentModal() {
+    const modal = document.getElementById('dev-modal');
+    if (modal) {
+        modal.classList.add('hidden');
+        document.body.style.overflow = '';
+    }
+}
+
 // Export functions for potential external use
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
@@ -711,6 +780,7 @@ if (typeof module !== 'undefined' && module.exports) {
         initializeGlitchEffects,
         initializeMetricsAnimation,
         initializeYouTubeIntegration,
+        initializeDevelopmentModal,
         toggleMobileMenu,
         closeMobileMenu
     };

@@ -106,6 +106,49 @@
         </div>
     </nav>
     
+    <!-- Development Modal -->
+    <div id="dev-modal" class="dev-modal" role="dialog" aria-labelledby="modal-title" aria-describedby="modal-description" aria-modal="true">
+        <div class="dev-modal-overlay" aria-hidden="true"></div>
+        <div class="dev-modal-content">
+            <div class="dev-modal-header">
+                <div class="dev-modal-icon">
+                    <i class="fas fa-code" aria-hidden="true"></i>
+                </div>
+                <h2 id="modal-title" class="dev-modal-title">Loja em Desenvolvimento</h2>
+                <button id="close-modal" class="dev-modal-close" aria-label="Fechar modal">
+                    <i class="fas fa-times" aria-hidden="true"></i>
+                </button>
+            </div>
+            <div class="dev-modal-body">
+                <p id="modal-description" class="dev-modal-text">
+                    <strong>Atenção:</strong> Esta loja está atualmente em desenvolvimento. 
+                    Todos os produtos, descrições e valores apresentados são <strong>fictícios</strong> 
+                    e servem apenas para demonstração.
+                </p>
+                <div class="dev-modal-features">
+                    <div class="dev-feature">
+                        <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
+                        <span>Produtos fictícios</span>
+                    </div>
+                    <div class="dev-feature">
+                        <i class="fas fa-tools" aria-hidden="true"></i>
+                        <span>Em desenvolvimento</span>
+                    </div>
+                    <div class="dev-feature">
+                        <i class="fas fa-info-circle" aria-hidden="true"></i>
+                        <span>Apenas demonstração</span>
+                    </div>
+                </div>
+            </div>
+            <div class="dev-modal-footer">
+                <button id="understand-btn" class="dev-modal-btn">
+                    <i class="fas fa-check" aria-hidden="true"></i>
+                    <span>Entendi</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Main Content -->
     <main id="main-content">
         <!-- Shop Hero Section -->
