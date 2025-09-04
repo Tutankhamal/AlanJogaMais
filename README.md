@@ -660,27 +660,25 @@ O código está disponível publicamente para estudo, mas qualquer uso do conte�
   - **Website**: [alanjogamais.com](https://alanjogamais.com)
   - **YouTube**: [@alanjogamais](https://www.youtube.com/@alanjogamais)
   - **Instagram**: [@alanjogamais](https://www.instagram.com/alanjogamais)
-  - **TikTok**: [@alanjogamais](https://www.tiktok.com/@alanjogamais)
 
 - **Desenvolvedor do Website**: André "Tutankhamal" Borba
   - **Desenvolvimento e Implementação**: Responsável pelo código, design e funcionalidades do website
+  - **Website**: [https://tutankhamal.com](https://tutankhamal.com)
 
 ### 🔗 Links Úteis
 - **Website**: [https://alanjogamais.com](https://alanjogamais.com)
-- **Repositório**: [GitHub](https://github.com/usuario/alanjogamais-website)
-- **Issues**: [GitHub Issues](https://github.com/usuario/alanjogamais-website/issues)
-- **Discussões**: [GitHub Discussions](https://github.com/usuario/alanjogamais-website/discussions)
+- **Repositório**: [GitHub](https://github.com/Tutankhamal/AlanJogaMais)
+- **Issues**: [GitHub Issues](https://github.com/Tutankhamal/AlanJogaMais/issues)
+- **Discussões**: [GitHub Discussions](https://github.com/Tutankhamal/AlanJogaMais/discussions)
 
 ---
 
 <div align="center">
 
-**🎮 Feito com ❤️ para a comunidade gamer retrô 🎮**
 
 *"Revivendo os clássicos, criando novas memórias"*
 
 [![YouTube](https://img.shields.io/badge/YouTube-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://www.youtube.com/@alanjogamais)
 [![Instagram](https://img.shields.io/badge/Instagram-E4405F?style=for-the-badge&logo=instagram&logoColor=white)](https://www.instagram.com/alanjogamais)
-[![TikTok](https://img.shields.io/badge/TikTok-000000?style=for-the-badge&logo=tiktok&logoColor=white)](https://www.tiktok.com/@alanjogamais)
 
 </div>
