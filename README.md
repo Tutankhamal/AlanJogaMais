@@ -635,24 +635,35 @@ Se aplicável, adicione screenshots.
 
 ## 📄 Licença
 
-Este projeto está licenciado sob a Licença MIT - veja o arquivo [LICENSE](LICENSE) para detalhes.
+Este projeto está sob uma licença personalizada com restrições específicas - veja o arquivo [LICENSE](LICENSE) para detalhes completos.
 
-### 📋 Resumo da Licença
-- ✅ **Uso comercial** permitido
-- ✅ **Modificação** permitida
-- ✅ **Distribuição** permitida
-- ✅ **Uso privado** permitido
-- ❌ **Responsabilidade** não assumida
-- ❌ **Garantia** não fornecida
+### 🚫 Restrições Principais
+- ⚠️ **Uso comercial**: Exclusivo para André Borba "Tutankhamal" e Alan Montezuma
+- ❌ **Cópia ou reprodução**: Expressamente proibida sem autorização
+- ⚠️ **Atribuição**: Obrigatória em qualquer uso do código
+
+### 📋 Permissões
+- ✅ **Estudo e aprendizado**: Permitido com atribuição obrigatória
+- ✅ **Uso privado**: Permitido para fins de estudo
+
+### ❌ Limitações Gerais
+- **Responsabilidade**: Não assumida
+- **Garantia**: Não fornecida
+
+### ⚠️ Importante
+O código está disponível publicamente para estudo, mas qualquer uso do conteúdo deve obrigatoriamente fazer menção ao criador (André Borba "Tutankhamal") e incluir as devidas licenças. A violação destes termos pode resultar em ações legais.
 
 ## 📞 Contato
 
-### 👨‍💻 Desenvolvedor
-- **Nome**: Alan Joga+
-- **Website**: [alanjogamais.com](https://alanjogamais.com)
-- **YouTube**: [@alanjogamais](https://www.youtube.com/@alanjogamais)
-- **Instagram**: [@alanjogamais](https://www.instagram.com/alanjogamais)
-- **TikTok**: [@alanjogamais](https://www.tiktok.com/@alanjogamais)
+### 👨‍💻 Desenvolvedores
+- **Proprietário do Canal**: Alan Joga+ (Alan Montezuma)
+  - **Website**: [alanjogamais.com](https://alanjogamais.com)
+  - **YouTube**: [@alanjogamais](https://www.youtube.com/@alanjogamais)
+  - **Instagram**: [@alanjogamais](https://www.instagram.com/alanjogamais)
+  - **TikTok**: [@alanjogamais](https://www.tiktok.com/@alanjogamais)
+
+- **Desenvolvedor do Website**: André "Tutankhamal" Borba
+  - **Desenvolvimento e Implementação**: Responsável pelo código, design e funcionalidades do website
 
 ### 🔗 Links Úteis
 - **Website**: [https://alanjogamais.com](https://alanjogamais.com)

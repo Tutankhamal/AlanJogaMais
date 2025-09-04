@@ -1,4 +1,59 @@
-MIT License
+# LICENÇA DO PROJETO ALAN JOGA+
+
+## Termos Adicionais de Uso e Restrições
+
+### 🚫 Restrições de Uso Comercial
+
+**IMPORTANTE**: Este projeto possui restrições específicas de uso comercial:
+
+- **Direitos Exclusivos**: Somente André Borba "Tutankhamal" e Alan Montezuma possuem direitos para uso comercial deste projeto.
+- **Proibição**: É expressamente proibida a cópia, reprodução ou uso comercial deste projeto por terceiros sem autorização expressa dos detentores dos direitos.
+
+### 📚 Permissão para Estudo
+
+- O código-fonte está disponível publicamente no GitHub para fins de estudo e aprendizado.
+- Qualquer uso do conteúdo do código, mesmo para fins educacionais, deve obrigatoriamente fazer menção ao criador (André Borba "Tutankhamal") e incluir as devidas licenças.
+- A disponibilidade do código para estudo não implica em permissão para uso comercial ou redistribuição.
+
+### 📝 Atribuição Obrigatória
+
+- Qualquer referência, citação ou uso do código (mesmo parcial) deve incluir atribuição clara aos criadores.
+- A atribuição deve mencionar: "Desenvolvido por André Borba 'Tutankhamal' para Alan Joga+".
+
+### ⚠️ Consequências de Violação
+
+- A violação destes termos pode resultar em ações legais.
+
+---
+
+### 🎮 Recursos Específicos do Projeto
+
+Este projeto inclui:
+
+#### 🖼️ Imagens e Logos
+- **Logo Alan Joga+**: Propriedade do canal Alan Joga+
+- **Imagens de Perfil**: Direitos reservados ao criador
+- **Ícones**: Font Awesome (Licença SIL OFL 1.1)
+
+#### 🎵 Conteúdo Multimídia
+- **Vídeos do YouTube**: Propriedade do canal Alan Joga+
+- **Conteúdo do Canal**: Direitos reservados
+
+#### 📚 Bibliotecas de Terceiros
+- **Font Awesome**: Licença SIL OFL 1.1
+- **Google Fonts**: Licença SIL OFL 1.1
+- **Lite YouTube Embed**: Licença MIT
+
+### 📞 Contato
+
+Para questões sobre licenciamento ou uso comercial:
+- **Website**: https://alanjogamais.com
+- **YouTube**: @alanjogamais
+- **Instagram**: @alanjogamais
+
+---
+
+## Licença MIT Base
 
 Copyright (c) 2024 Alan Joga+
 
@@ -22,16 +77,13 @@ SOFTWARE.
 
 ---
 
-## Sobre esta Licença
+## Sobre a Licença MIT
 
 A Licença MIT é uma licença de software livre permissiva que permite:
 
-### ✅ Permitido:
-- **Uso Comercial**: Você pode usar este software para fins comerciais
+### ✅ Permitido (com as restrições acima):
 - **Modificação**: Você pode modificar o software
-- **Distribuição**: Você pode distribuir o software
 - **Uso Privado**: Você pode usar o software para fins privados
-- **Sublicenciamento**: Você pode sublicenciar o software
 
 ### ❌ Limitações:
 - **Responsabilidade**: Os autores não são responsáveis por danos
@@ -40,35 +92,11 @@ A Licença MIT é uma licença de software livre permissiva que permite:
 ### 📋 Condições:
 - **Aviso de Licença e Copyright**: Deve ser incluído em todas as cópias
 
-### 🎮 Recursos Específicos do Projeto
-
-Este projeto inclui:
-
-#### 🖼️ Imagens e Logos
-- **Logo Alan Joga+**: Propriedade do canal Alan Joga+
-- **Imagens de Perfil**: Direitos reservados ao criador
-- **Ícones**: Font Awesome (Licença SIL OFL 1.1)
-
-#### 🎵 Conteúdo Multimídia
-- **Vídeos do YouTube**: Propriedade do canal Alan Joga+
-- **Conteúdo do Canal**: Direitos reservados
-
-#### 📚 Bibliotecas de Terceiros
-- **Font Awesome**: Licença SIL OFL 1.1
-- **Google Fonts**: Licença SIL OFL 1.1
-- **Lite YouTube Embed**: Licença MIT
-
 ### 🤝 Contribuições
 
-Ao contribuir para este projeto, você concorda que suas contribuições serão licenciadas sob a mesma licença MIT.
-
-### 📞 Contato
-
-Para questões sobre licenciamento ou uso comercial:
-- **Website**: https://alanjogamais.com
-- **YouTube**: @alanjogamais
-- **Instagram**: @alanjogamais
+Ao contribuir para este projeto, você concorda que suas contribuições serão licenciadas sob os mesmos termos.
 
 ---
 
 *Esta licença se aplica ao código-fonte, estrutura e documentação do website. Conteúdo específico do canal (logos, imagens, vídeos) pode ter direitos autorais separados.*
+- Os detentores dos direitos reservam-se o direito de solicitar a remoção de qualquer conteúdo que viole estes termos.

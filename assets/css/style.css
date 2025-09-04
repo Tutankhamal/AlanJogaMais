@@ -1,4 +1,5 @@
 /* ===== CSS VARIABLES ===== */
+/* Desenvolvido por André "Tutankhamal" Borba */
 :root {
     --accent-color: #76e7ff;
     --text-light: #cccccc;
@@ -855,6 +856,10 @@ body {
     color: #cccccc;
     margin-bottom: 0.5rem;
 }
+
+
+
+
 
 .developer-credit {
     font-size: 0.9rem;

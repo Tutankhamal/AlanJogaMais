@@ -2,6 +2,8 @@
  * Hexagon Background Animation
  * Creates a dynamic hexagonal grid that reacts to mouse movement
  * with cyberpunk-style lighting effects
+ * 
+ * Desenvolvido por André "Tutankhamal" Borba
  */
 
 class HexagonBackground {

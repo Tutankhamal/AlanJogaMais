@@ -1,6 +1,8 @@
 /**
  * Main JavaScript file for Alan Joga+ Website
  * Handles navigation, animations, YouTube integration, and interactive effects
+ * 
+ * Desenvolvido por André "Tutankhamal" Borba
  */
 
 // Global variables
