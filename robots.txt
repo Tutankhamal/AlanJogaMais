@@ -1,0 +1,16 @@
+# robots.txt para AlanJogaMais-Website
+User-agent: *
+Allow: /
+
+# Permitir acesso a todas as páginas
+Allow: /index.html
+Allow: /canal.html
+Allow: /shop.html
+Allow: /sobre.html
+Allow: /contato.html
+
+# Permitir acesso a recursos estáticos
+Allow: /assets/
+
+# Localização do sitemap
+Sitemap: https://alanjogamais.com.br/sitemap.xml
