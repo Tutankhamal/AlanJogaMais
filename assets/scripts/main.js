@@ -309,7 +309,7 @@ function initializeYouTubeIntegration() {
                 videoEl.className = 'indexvideo-item';
                 videoEl.style.animationDelay = `${index * 0.2}s`;
                 
-                // Create lite-youtube element
+                // Create lite-youtube element with loading="lazy"
                 videoEl.innerHTML = `
                     <lite-youtube 
                         videoid="${videoId}" 
@@ -317,6 +317,25 @@ function initializeYouTubeIntegration() {
                     </lite-youtube>
                     <div class="indexvideo-title-text">${item.title}</div>
                 `;
+                
+                // Add loading="lazy" to the iframe when it's created
+                const liteYt = videoEl.querySelector('lite-youtube');
+                if (liteYt) {
+                    // Add a mutation observer to catch when the iframe is created
+                    const observer = new MutationObserver((mutations) => {
+                        mutations.forEach((mutation) => {
+                            if (mutation.addedNodes.length) {
+                                const iframe = liteYt.querySelector('iframe');
+                                if (iframe) {
+                                    iframe.setAttribute('loading', 'lazy');
+                                    observer.disconnect();
+                                }
+                            }
+                        });
+                    });
+                    
+                    observer.observe(liteYt, { childList: true, subtree: true });
+                }
                 
                 container.appendChild(videoEl);
                 
