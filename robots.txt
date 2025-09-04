@@ -13,4 +13,4 @@ Allow: /contato.html
 Allow: /assets/
 
 # Localização do sitemap
-Sitemap: https://alanjogamais.com.br/sitemap.xml
+Sitemap: https://alanjogamais.com/sitemap.xml

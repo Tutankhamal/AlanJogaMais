@@ -121,8 +121,8 @@ O website Alan Joga+ é um portal dedicado ao canal de jogos retrô do YouTube. 
 
 1. Clone o repositório:
    ```bash
-   git clone https://github.com/seu-usuario/alanjogamais-website.git
-   cd alanjogamais-website
+   git clone https://github.com/Tutankhamal/alanjogamais.git
+   cd alanjogamais
    ```
 
 2. Inicie um servidor local:
@@ -446,9 +446,9 @@ Procure a seção de meta tags no início de cada arquivo (aproximadamente linha
 ```html
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="Alan Joga+ - Canal de jogos retrô com lives, gameplays e nostalgia dos videogames clássicos. Nintendo, Sega, PlayStation e muito mais!">
+<meta name="description" content="Alan Joga+ | Canal de jogos retrô com lives, gameplays e nostalgia dos videogames clássicos. Nintendo, Sega, PlayStation e muito mais!">
 <meta name="keywords" content="jogos retrô, videogames antigos, Nintendo, Sega, PlayStation, live gaming, nostalgia, Alan Joga Mais">
-<meta name="author" content="Alan Joga+ | Desenvolvido por André "Tutankhamal" Borba">
+<meta name="author" content="Desenvolvido por André 'Tutankhamal' Borba">
 <meta name="robots" content="index, follow">
 ```
 
@@ -470,14 +470,14 @@ Procure as seções Open Graph e Twitter (aproximadamente linhas 10-25):
 <!-- Open Graph / Facebook -->
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://alanjogamais.com/">
-<meta property="og:title" content="Alan Joga+ - Canal de Jogos Retrô">
+<meta property="og:title" content="Alan Joga+ | Canal de Jogos Retrô">
 <meta property="og:description" content="Canal de jogos retrô com lives, gameplays e nostalgia dos videogames clássicos. Nintendo, Sega, PlayStation e muito mais!">
 <meta property="og:image" content="./assets/images/main_logo.webp">
 
 <!-- Twitter -->
 <meta property="twitter:card" content="summary_large_image">
 <meta property="twitter:url" content="https://alanjogamais.com/">
-<meta property="twitter:title" content="Alan Joga+ - Canal de Jogos Retrô">
+<meta property="twitter:title" content="Alan Joga+ | Canal de Jogos Retrô">
 <meta property="twitter:description" content="Canal de jogos retrô com lives, gameplays e nostalgia dos videogames clássicos.">
 <meta property="twitter:image" content="./assets/images/main_logo.webp">
 ```
