@@ -246,17 +246,61 @@ function displayChannelAge() {
     const finalMonths = Math.max(0, monthsDiff);
     const finalDays = Math.max(0, daysDiff);
     
-    // Valor principal: apenas anos
-    const mainText = finalYears + (finalYears === 1 ? ' ano' : ' anos');
-    
     // Detalhes completos na descrição
-    const detailText = finalYears + 'A ' + finalMonths + 'M ' + finalDays + 'D';
+    const detailText = finalYears + ' Anos ' + finalMonths + ' Meses ' + finalDays + ' Dias';
     
-    // Definir os textos nos elementos
-    ageElement.textContent = mainText;
-    labelElement.textContent = detailText;
+    // Adicionar atributo data-target para animação
+    ageElement.setAttribute('data-age-target', finalYears);
     
-    console.log('Idade do canal calculada:', mainText, '(' + detailText + ')');
+    // Animar o contador de anos como as outras métricas
+    function animateChannelAge() {
+        const target = parseInt(ageElement.getAttribute('data-age-target'));
+        const duration = 2000; // 2 segundos, igual às outras métricas
+        const increment = target / (duration / 16); // 60fps
+        let current = 0;
+        
+        // Iniciar com "Calculando..."
+        ageElement.textContent = "Calculando...";
+        
+        const timer = setInterval(() => {
+            current += increment;
+            
+            if (current >= target) {
+                current = target;
+                clearInterval(timer);
+                
+                // Formato final com texto
+                ageElement.textContent = target + (target === 1 ? ' ano' : ' anos');
+            } else {
+                // Durante a animação
+                ageElement.textContent = Math.floor(current) + (Math.floor(current) === 1 ? ' ano' : ' anos');
+            }
+        }, 16);
+        
+        // Definir o texto detalhado no label
+        labelElement.textContent = detailText;
+    }
+    
+    // Verificar se estamos na seção de métricas e iniciar animação quando visível
+    const metricsSection = document.querySelector('.metrics-section');
+    if (metricsSection) {
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    animateChannelAge();
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.5 });
+        
+        observer.observe(metricsSection);
+    } else {
+        // Se não encontrar a seção, apenas definir o texto sem animação
+        ageElement.textContent = finalYears + (finalYears === 1 ? ' ano' : ' anos');
+        labelElement.textContent = detailText;
+    }
+    
+    console.log('Idade do canal calculada:', finalYears + (finalYears === 1 ? ' ano' : ' anos'), '(' + detailText + ')');
 }
 
 /**
