@@ -2640,10 +2640,7 @@ body {
         gap: 0.6rem;
     }
     
-    .dev-feature {
-        padding: 0.6rem 0.8rem;
-        font-size: 0.9rem;
-    }
+
     
     .dev-modal-footer {
         padding: 0.8rem 1.2rem 1.2rem;
@@ -3345,52 +3342,6 @@ body {
 }
 
 /* Responsive Design for Contact Page */
-@media (max-width: 768px) {
-    .contact-content {
-        grid-template-columns: 1fr;
-        gap: 1.5rem;
-        text-align: center;
-    }
-    
-    .contact-icon {
-        width: 60px;
-        height: 60px;
-        font-size: 1.5rem;
-        margin: 0 auto;
-    }
-    
-    .contact-title {
-        font-size: 1.5rem;
-    }
-    
-    .contact-description {
-        font-size: 1rem;
-    }
-    
-    .contact-features {
-        justify-content: center;
-    }
-    
-    .contact-button {
-        padding: 0.8rem 1.5rem;
-        font-size: 0.9rem;
-    }
-    
-    .cta-title {
-        font-size: 2rem;
-    }
-    
-    .cta-buttons {
-        flex-direction: column;
-        align-items: center;
-    }
-    
-    .cta-button {
-        width: 100%;
-        max-width: 300px;
-    }
-}
-
 /* ===== CONTACT PAGE STYLES ===== */
 
 /* Contact Methods Section */
@@ -3590,6 +3541,7 @@ body {
 }
 
 /* Responsive adjustments for contact page */
+/* Responsive adjustments for contact page and extras */
 @media (max-width: 768px) {
     .contact-methods-grid {
         grid-template-columns: 1fr;
@@ -3599,6 +3551,50 @@ body {
     .contact-grid {
         grid-template-columns: 1fr;
         gap: 1.5rem;
+    }
+    
+    .contact-content {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+        text-align: center;
+    }
+    
+    .contact-icon {
+        width: 60px;
+        height: 60px;
+        font-size: 1.5rem;
+        margin: 0 auto;
+    }
+    
+    .contact-title {
+        font-size: 1.5rem;
+    }
+    
+    .contact-description {
+        font-size: 1rem;
+    }
+    
+    .contact-features {
+        justify-content: center;
+    }
+    
+    .contact-button {
+        padding: 0.8rem 1.5rem;
+        font-size: 0.9rem;
+    }
+    
+    .cta-title {
+        font-size: 2rem;
+    }
+    
+    .cta-buttons {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .cta-button {
+        width: 100%;
+        max-width: 300px;
     }
     
     /* Roleta Responsiva */

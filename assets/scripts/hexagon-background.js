@@ -45,10 +45,18 @@ class HexagonBackground {
         
         // Performance settings
         this.lastFrameTime = 0;
-        this.targetFPS = 30; // Limitado a 30 FPS
+        this.targetFPS = this.detectOptimalFPS(); // FPS adaptativo
         this.frameInterval = 1000 / this.targetFPS;
         this.mouseThrottleDelay = 16; // ~60fps para mouse
         this.performanceMode = this.detectPerformanceMode();
+        
+        // Otimização adicional para dispositivos lentos
+        if (this.performanceMode === 'low') {
+            this.hexSize = 40; // Hexágonos maiores = menos hexágonos
+            this.hexSpacing = 80;
+            this.glowRadius = 150; // Menor raio de glow
+            this.blinkChance = 0.0001; // Menos piscadas
+        }
         
         // Performance monitoring
         this.frameCount = 0;
@@ -116,6 +124,21 @@ class HexagonBackground {
         
         // Regenerate hexagons after resize
         this.generateHexagons();
+    }
+    
+    detectOptimalFPS() {
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+        const screenArea = window.innerWidth * window.innerHeight;
+        
+        // FPS adaptativo baseado no dispositivo
+        if (isMobile || isTouch) {
+            return 20; // Dispositivos móveis: 20 FPS
+        } else if (screenArea > 3686400) {
+            return 25; // Telas grandes: 25 FPS
+        } else {
+            return 30; // Desktop padrão: 30 FPS
+        }
     }
     
     detectPerformanceMode() {
