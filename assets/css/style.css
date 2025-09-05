@@ -1376,6 +1376,19 @@ body {
         height: 150px;
     }
     
+    .nav-container {
+        padding: 0 15px;
+    }
+    
+    .nav-toggle {
+        padding: 6px;
+    }
+    
+    .hamburger-line {
+        width: 20px;
+        height: 2px;
+    }
+    
     .cta-button {
         padding: 12px 25px;
         font-size: 1rem;
@@ -3644,6 +3657,45 @@ body {
     
     .volume-label {
         min-width: auto;
+    }
+}
+
+/* Extra small devices (320px and down) */
+@media (max-width: 320px) {
+    .nav-container {
+        padding: 0 10px;
+    }
+    
+    .nav-logo {
+        font-size: 1.3rem;
+    }
+    
+    .nav-toggle {
+        padding: 5px;
+    }
+    
+    .hamburger-line {
+        width: 18px;
+        height: 2px;
+        margin: 2px 0;
+    }
+    
+    .nav-menu {
+        width: 100%;
+        padding: 60px 10px 20px;
+    }
+    
+    .nav-link {
+        font-size: 1rem;
+        padding: 12px 0;
+    }
+    
+    .hero-title {
+        font-size: 1.8rem;
+    }
+    
+    .hero-description {
+        font-size: 1rem;
     }
     
     .volume-range {
