@@ -124,12 +124,12 @@ function initializeGlitchEffects() {
         heroLogo.addEventListener('mouseenter', function() {
             this.style.filter = 'hue-rotate(180deg) saturate(2)';
             setTimeout(() => {
-                this.style.filter = 'drop-shadow(0 0 50px rgba(118, 231, 255, 0.8))';
+                this.style.filter = 'drop-shadow(0 0 50px rgba(64, 128, 255, 0.8))';
             }, 150);
         });
         
         heroLogo.addEventListener('mouseleave', function() {
-            this.style.filter = 'drop-shadow(0 0 30px rgba(118, 231, 255, 0.3))';
+            this.style.filter = 'drop-shadow(0 0 30px rgba(64, 128, 255, 0.3))';
         });
     }
 }
@@ -624,9 +624,9 @@ style.textContent = `
     }
     
     .retry-button {
-        background: rgba(118, 231, 255, 0.1);
-        border: 2px solid #00ffff;
-        color: #00ffff;
+        background: rgba(64, 128, 255, 0.1);
+        border: 2px solid #4080ff;
+        color: #4080ff;
         padding: 10px 20px;
         border-radius: 25px;
         cursor: pointer;
@@ -635,7 +635,7 @@ style.textContent = `
     }
     
     .retry-button:hover {
-        background: rgba(118, 231, 255, 0.2);
+        background: rgba(64, 128, 255, 0.2);
         transform: translateY(-2px);
     }
 `;

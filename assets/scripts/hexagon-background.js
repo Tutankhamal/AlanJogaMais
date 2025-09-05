@@ -18,7 +18,7 @@ class HexagonBackground {
         this.hexSize = 30;
         this.hexSpacing = 60;
         this.glowRadius = 250; // Aumentado para maior área de efeito
-        this.maxGlowIntensity = 0.12; // Aumentado para maior intensidade no hover
+        this.maxGlowIntensity = 0.3; // Aumentado significativamente para maior brilho
         this.waveSpeed = 0.003; // Reduzido para menos cálculos
         this.time = 0;
         this.blinkChance = 0.0002; // Reduzido para menos piscadas
@@ -139,6 +139,22 @@ class HexagonBackground {
         } else {
             return 30; // Desktop padrão: 30 FPS
         }
+    }
+    
+    getRandomBaseColor() {
+        // Array de cores base apenas com tons azulados
+        const baseColors = [
+            { r: 0, g: 120, b: 255 },     // Azul puro intenso
+            { r: 30, g: 144, b: 255 },    // Azul dodger
+            { r: 0, g: 100, b: 200 },     // Azul escuro
+            { r: 70, g: 130, b: 255 },    // Azul royal
+            { r: 0, g: 140, b: 255 },     // Azul médio
+            { r: 100, g: 149, b: 237 },   // Azul cornflower
+            { r: 65, g: 105, b: 225 },    // Azul royal clássico
+            { r: 0, g: 110, b: 220 }      // Azul profundo
+        ];
+        
+        return baseColors[Math.floor(Math.random() * baseColors.length)];
     }
     
     detectPerformanceMode() {
@@ -275,21 +291,21 @@ class HexagonBackground {
                     row: row,
                     col: col,
                     size: effectiveHexSize, // Tamanho individual do hexágono
-                    opacity: 0.1,
+                    opacity: 0.25,
                     glowIntensity: 0,
-                    baseOpacity: 0.02 + Math.random() * 0.03,
+                    baseOpacity: 0.15 + Math.random() * 0.1,
                     wavePhase: Math.random() * Math.PI * 2,
                     blinkTimer: 0,
                     isBlinking: false,
                     blinkIntensity: 0,
-                    targetOpacity: 0.1,
-                    currentOpacity: 0.1,
+                    targetOpacity: 0.25,
+                    currentOpacity: 0.25,
                     isVisible: true, // Para culling
                     // Propriedades para efeito colorido interativo
                     colorPhase: Math.random() * Math.PI * 2, // Fase inicial aleatória
                     colorIntensity: 0,
                     waveDelay: Math.random() * Math.PI * 2,
-                    baseColor: { r: 0, g: 150, b: 255 } // Cor base azul
+                    baseColor: this.getRandomBaseColor() // Cor base variada
                 });
             }
         }
@@ -384,30 +400,51 @@ class HexagonBackground {
         // Determinar cores baseadas no modo colorido
         let strokeColor, glowColor;
         if (this.colorTransition > 0 && hexData) {
-            // Modo colorido: usar cores RGB dinâmicas
+            // Modo colorido: usar cores RGB dinâmicas com tons de azul
             const colorIntensity = hexData.colorIntensity || 0;
             const time = performance.now() * 0.001;
             const phase = hexData.colorPhase + time * this.rainbowSpeed;
             
-            // Cores do arco-íris mais vibrantes
-            const r = Math.floor(128 + 127 * Math.sin(phase));
-            const g = Math.floor(128 + 127 * Math.sin(phase + Math.PI * 2/3));
-            const b = Math.floor(128 + 127 * Math.sin(phase + Math.PI * 4/3));
+            // Tons de azul apenas, evitando azuis extremamente claros
+            const baseBlue = 80 + 40 * Math.sin(phase); // Varia entre 40-120 (azul mais escuro)
+            const r = Math.floor(Math.max(0, Math.min(255, 5 + 15 * Math.sin(phase * 0.8)))); // Vermelho muito reduzido
+            const g = Math.floor(Math.max(0, Math.min(255, 20 + 30 * Math.sin(phase * 0.6)))); // Verde muito reduzido
+            const b = Math.floor(Math.max(0, Math.min(255, baseBlue))); // Azul escuro dominante
             
-            // Aplicar intensidade baseada na onda com ajuste moderado
-            const intensity = Math.min(1, colorIntensity * this.colorTransition * 1.8); // Intensidade moderada
+            // Verificar se há efeito de onda de clique para aumentar brilho
+            let isClickWaveEffect = false;
+            let clickWaveIntensity = 0;
+            
+            this.clickWaves.forEach(wave => {
+                const clickDx = hexData.x - wave.x;
+                const clickDy = hexData.y - wave.y;
+                const clickDistance = Math.sqrt(clickDx * clickDx + clickDy * clickDy);
+                const waveThickness = 60;
+                const distanceFromWaveEdge = Math.abs(clickDistance - wave.radius);
+                
+                if (distanceFromWaveEdge < waveThickness) {
+                    isClickWaveEffect = true;
+                    const waveIntensity = (1 - distanceFromWaveEdge / waveThickness) * wave.intensity;
+                    clickWaveIntensity = Math.max(clickWaveIntensity, waveIntensity);
+                }
+            });
+            
+            // Cores azul escuro para o modo colorido
+            const intensity = Math.min(1, colorIntensity * this.colorTransition * 2.0);
             const finalR = Math.floor(hexData.baseColor.r + (r - hexData.baseColor.r) * intensity);
             const finalG = Math.floor(hexData.baseColor.g + (g - hexData.baseColor.g) * intensity);
             const finalB = Math.floor(hexData.baseColor.b + (b - hexData.baseColor.b) * intensity);
             
-            // Opacidade moderada para equilibrar visual e legibilidade
-            const colorOpacity = Math.max(glowIntensity * 0.2, intensity * 0.5);
+            // Opacidade ajustada com brilho aumentado para ondas de clique
+            const effectIntensity = Math.min(1, colorIntensity * this.colorTransition * 2.0);
+            const clickBrightness = isClickWaveEffect ? clickWaveIntensity * 1.5 : 0; // Aumentar brilho da onda
+            const colorOpacity = Math.max(glowIntensity * 0.4, effectIntensity * 0.6 + clickBrightness * 0.4);
             strokeColor = `rgba(${finalR}, ${finalG}, ${finalB}, ${colorOpacity})`;
-            glowColor = `rgba(${finalR}, ${finalG}, ${finalB}, ${Math.max(glowIntensity * 0.3, intensity * 0.6)})`;
+            glowColor = `rgba(${finalR}, ${finalG}, ${finalB}, ${Math.max(glowIntensity * 0.5, effectIntensity * 0.7 + clickBrightness * 0.5)})`;
         } else {
-            // Modo normal
-            strokeColor = `rgba(118, 231, 255, ${glowIntensity * 0.3})`;
-            glowColor = `rgba(118, 231, 255, ${glowIntensity * 0.4})`;
+            // Modo standard: tom azul claro
+            strokeColor = `rgba(80, 200, 255, ${glowIntensity * 0.6})`;
+            glowColor = `rgba(80, 200, 255, ${glowIntensity * 0.8})`;
         }
         
         // Draw glow effect apenas se significativo e no modo high performance
@@ -452,24 +489,26 @@ class HexagonBackground {
         // Determinar cor do contorno
         let borderColor;
         if (this.colorTransition > 0 && hexData) {
+            // Modo colorido: tons de azul escuros
             const colorIntensity = hexData.colorIntensity || 0;
             const time = performance.now() * 0.001;
             const phase = hexData.colorPhase + time * this.rainbowSpeed;
             
-            // Cores do arco-íris para o contorno
-            const r = Math.floor(128 + 127 * Math.sin(phase));
-            const g = Math.floor(128 + 127 * Math.sin(phase + Math.PI * 2/3));
-            const b = Math.floor(128 + 127 * Math.sin(phase + Math.PI * 4/3));
+            // Tons de azul escuros para o contorno
+            const r = Math.floor(20 + 30 * Math.sin(phase * 0.3)); // Vermelho reduzido
+            const g = Math.floor(40 + 40 * Math.sin(phase * 0.5)); // Verde reduzido
+            const b = Math.floor(100 + 50 * Math.sin(phase)); // Azul escuro dominante
             
-            // Aplicar intensidade baseada na onda com ajuste moderado
-            const intensity = Math.min(1, colorIntensity * this.colorTransition * 2.2); // Intensidade moderada
+            // Aplicar intensidade baseada na onda com brilho equilibrado
+            const intensity = Math.min(1, colorIntensity * this.colorTransition * 2.2); // Intensidade equilibrada
             const finalR = Math.floor(hexData.baseColor.r + (r - hexData.baseColor.r) * intensity);
             const finalG = Math.floor(hexData.baseColor.g + (g - hexData.baseColor.g) * intensity);
             const finalB = Math.floor(hexData.baseColor.b + (b - hexData.baseColor.b) * intensity);
             
             borderColor = `rgba(${finalR}, ${finalG}, ${finalB}, ${Math.max(borderIntensity, intensity * 0.5)})`;
         } else {
-            borderColor = `rgba(118, 231, 255, ${borderIntensity})`;
+            // Modo standard: azul claro
+            borderColor = `rgba(64, 128, 255, ${borderIntensity})`;
         }
         
         // Draw normal border (otimizado)
