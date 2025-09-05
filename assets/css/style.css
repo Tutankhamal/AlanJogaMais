@@ -195,6 +195,11 @@ body {
     color: inherit;
 }
 
+.nav-brand-link {
+    text-decoration: none;
+    color: inherit;
+}
+
 .nav-logo img {
     width: 45px;
     height: 45px;

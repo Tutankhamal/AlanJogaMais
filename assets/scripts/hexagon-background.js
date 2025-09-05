@@ -23,6 +23,26 @@ class HexagonBackground {
         this.time = 0;
         this.blinkChance = 0.0002; // Reduzido para menos piscadas
         
+        // Sistema de efeito colorido interativo
+        this.colorMode = false;
+        this.colorTransition = 0; // 0 = modo normal, 1 = modo colorido completo
+        this.colorTransitionSpeed = 0.05; // Aumentar velocidade de transição
+        this.waveCenter = { x: 0, y: 0 };
+        this.waveRadius = 0;
+        this.maxWaveRadius = 800;
+        this.waveSpeed = 3; // velocidade da onda em pixels por frame
+        this.rainbowSpeed = 0.1; // Aumentar velocidade do arco-íris
+        this.colorIntensity = 1.0;
+        this.timeSpeed = 0.01; // velocidade do tempo para animações
+        
+        // Sistema de ondas de clique
+        this.clickWaves = []; // Array para múltiplas ondas
+        this.maxClickWaves = 5; // Máximo de ondas simultâneas
+        this.clickWaveSpeed = 6; // Velocidade de expansão da onda (aumentada)
+        this.clickWaveMaxRadius = Math.max(window.innerWidth, window.innerHeight) * 1.2; // Raio máximo baseado na tela
+        this.clickWaveIntensity = 0.8; // Intensidade inicial da onda
+        this.lastColorEffectTime = 0; // Para throttling do efeito colorido
+        
         // Performance settings
         this.lastFrameTime = 0;
         this.targetFPS = 30; // Limitado a 30 FPS
@@ -241,7 +261,12 @@ class HexagonBackground {
                     blinkIntensity: 0,
                     targetOpacity: 0.1,
                     currentOpacity: 0.1,
-                    isVisible: true // Para culling
+                    isVisible: true, // Para culling
+                    // Propriedades para efeito colorido interativo
+                    colorPhase: Math.random() * Math.PI * 2, // Fase inicial aleatória
+                    colorIntensity: 0,
+                    waveDelay: Math.random() * Math.PI * 2,
+                    baseColor: { r: 0, g: 150, b: 255 } // Cor base azul
                 });
             }
         }
@@ -268,6 +293,24 @@ class HexagonBackground {
             }
         });
         
+        // Click event for wave effects (evitar conflitos com logos)
+        document.addEventListener('click', (e) => {
+            // Verificar se o clique não foi em uma logo
+            const target = e.target;
+            const isLogo = target.closest('.hero-logo') || target.closest('#nav-logo-effect');
+            
+            if (!isLogo) {
+                this.createClickWave(e.clientX, e.clientY);
+            }
+        });
+        
+        // Touch events for mobile clicks
+        document.addEventListener('touchstart', (e) => {
+            if (e.touches.length > 0) {
+                this.createClickWave(e.touches[0].clientX, e.touches[0].clientY);
+            }
+        });
+        
         // Resize event (debounced)
         let resizeTimeout;
         window.addEventListener('resize', () => {
@@ -275,6 +318,8 @@ class HexagonBackground {
             resizeTimeout = setTimeout(() => {
                 this.resizeCanvas();
                 this.regenerateHexagons(); // Recalcular hexágonos após resize
+                // Atualizar raio máximo das ondas baseado no novo tamanho da tela
+                this.clickWaveMaxRadius = Math.max(window.innerWidth, window.innerHeight) * 1.2;
             }, 250);
         });
         
@@ -288,7 +333,7 @@ class HexagonBackground {
         });
     }
     
-    drawHexagon(x, y, size, opacity, glowIntensity) {
+    drawHexagon(x, y, size, opacity, glowIntensity, hexData = null) {
         if (!this.ctx) return;
         
         const ctx = this.ctx;
@@ -313,12 +358,41 @@ class HexagonBackground {
             y: y + size * p.sin
         }));
         
+        // Determinar cores baseadas no modo colorido
+        let strokeColor, glowColor;
+        if (this.colorTransition > 0 && hexData) {
+            // Modo colorido: usar cores RGB dinâmicas
+            const colorIntensity = hexData.colorIntensity || 0;
+            const time = performance.now() * 0.001;
+            const phase = hexData.colorPhase + time * this.rainbowSpeed;
+            
+            // Cores do arco-íris mais vibrantes
+            const r = Math.floor(128 + 127 * Math.sin(phase));
+            const g = Math.floor(128 + 127 * Math.sin(phase + Math.PI * 2/3));
+            const b = Math.floor(128 + 127 * Math.sin(phase + Math.PI * 4/3));
+            
+            // Aplicar intensidade baseada na onda com ajuste moderado
+            const intensity = Math.min(1, colorIntensity * this.colorTransition * 1.8); // Intensidade moderada
+            const finalR = Math.floor(hexData.baseColor.r + (r - hexData.baseColor.r) * intensity);
+            const finalG = Math.floor(hexData.baseColor.g + (g - hexData.baseColor.g) * intensity);
+            const finalB = Math.floor(hexData.baseColor.b + (b - hexData.baseColor.b) * intensity);
+            
+            // Opacidade moderada para equilibrar visual e legibilidade
+            const colorOpacity = Math.max(glowIntensity * 0.2, intensity * 0.5);
+            strokeColor = `rgba(${finalR}, ${finalG}, ${finalB}, ${colorOpacity})`;
+            glowColor = `rgba(${finalR}, ${finalG}, ${finalB}, ${Math.max(glowIntensity * 0.3, intensity * 0.6)})`;
+        } else {
+            // Modo normal
+            strokeColor = `rgba(118, 231, 255, ${glowIntensity * 0.3})`;
+            glowColor = `rgba(118, 231, 255, ${glowIntensity * 0.4})`;
+        }
+        
         // Draw glow effect apenas se significativo e no modo high performance
         if (glowIntensity > 0.02 && this.performanceMode === 'high') {
             ctx.save();
             
             // Glow simplificado
-            ctx.shadowColor = `rgba(118, 231, 255, ${glowIntensity * 0.4})`;
+            ctx.shadowColor = glowColor;
             ctx.shadowBlur = size * glowIntensity * 2;
             
             // Draw hexagon path para glow
@@ -329,7 +403,7 @@ class HexagonBackground {
             }
             ctx.closePath();
             
-            ctx.strokeStyle = `rgba(118, 231, 255, ${glowIntensity * 0.3})`;
+            ctx.strokeStyle = strokeColor;
             ctx.lineWidth = 1;
             ctx.stroke();
             
@@ -352,16 +426,53 @@ class HexagonBackground {
         
         ctx.closePath();
         
+        // Determinar cor do contorno
+        let borderColor;
+        if (this.colorTransition > 0 && hexData) {
+            const colorIntensity = hexData.colorIntensity || 0;
+            const time = performance.now() * 0.001;
+            const phase = hexData.colorPhase + time * this.rainbowSpeed;
+            
+            // Cores do arco-íris para o contorno
+            const r = Math.floor(128 + 127 * Math.sin(phase));
+            const g = Math.floor(128 + 127 * Math.sin(phase + Math.PI * 2/3));
+            const b = Math.floor(128 + 127 * Math.sin(phase + Math.PI * 4/3));
+            
+            // Aplicar intensidade baseada na onda com ajuste moderado
+            const intensity = Math.min(1, colorIntensity * this.colorTransition * 2.2); // Intensidade moderada
+            const finalR = Math.floor(hexData.baseColor.r + (r - hexData.baseColor.r) * intensity);
+            const finalG = Math.floor(hexData.baseColor.g + (g - hexData.baseColor.g) * intensity);
+            const finalB = Math.floor(hexData.baseColor.b + (b - hexData.baseColor.b) * intensity);
+            
+            borderColor = `rgba(${finalR}, ${finalG}, ${finalB}, ${Math.max(borderIntensity, intensity * 0.5)})`;
+        } else {
+            borderColor = `rgba(118, 231, 255, ${borderIntensity})`;
+        }
+        
         // Draw normal border (otimizado)
-        ctx.strokeStyle = `rgba(118, 231, 255, ${borderIntensity})`;
+        ctx.strokeStyle = borderColor;
         ctx.lineWidth = 1 + (glowIntensity * 1.5); // Reduzido multiplicador
         ctx.stroke();
         
         ctx.restore();
     }
     
+
+    
     updateHexagons() {
-        this.time += this.waveSpeed;
+        this.time += this.timeSpeed;
+        
+        // Atualizar transição de cores
+        if (this.colorMode && this.colorTransition < 1) {
+            this.colorTransition = Math.min(1, this.colorTransition + this.colorTransitionSpeed);
+        } else if (!this.colorMode && this.colorTransition > 0) {
+            this.colorTransition = Math.max(0, this.colorTransition - this.colorTransitionSpeed);
+        }
+        
+        // Onda de cores desabilitada - usando apenas ondas de clique otimizadas
+        // if (this.colorMode && this.waveRadius < this.maxWaveRadius) {
+        //     this.waveRadius += this.waveSpeed;
+        // }
         
         // Viewport culling melhorado - garantir cobertura completa sem lacunas
         // CORREÇÃO: Margem mais generosa para mobile para evitar lacunas
@@ -401,6 +512,23 @@ class HexagonBackground {
                 mouseGlow = enhancedIntensity * this.maxGlowIntensity;
             }
             
+            // Efeito das ondas de clique
+            let clickWaveGlow = 0;
+            this.clickWaves.forEach(wave => {
+                const clickDx = hex.x - wave.x;
+                const clickDy = hex.y - wave.y;
+                const clickDistance = Math.sqrt(clickDx * clickDx + clickDy * clickDy);
+                
+                // Calcular se o hexágono está na área da onda
+                const waveThickness = 40; // Espessura da onda
+                const distanceFromWaveEdge = Math.abs(clickDistance - wave.radius);
+                
+                if (distanceFromWaveEdge < waveThickness) {
+                    const waveIntensity = (1 - distanceFromWaveEdge / waveThickness) * wave.intensity;
+                    clickWaveGlow = Math.max(clickWaveGlow, waveIntensity * 0.6);
+                }
+            });
+            
             // Sistema de piscadas aleatórias
             if (!hex.isBlinking && Math.random() < this.blinkChance) {
                 hex.isBlinking = true;
@@ -419,8 +547,76 @@ class HexagonBackground {
                     hex.targetOpacity = hex.baseOpacity;
                 }
             } else {
-                // Combinar wave e mouse glow (intensificado)
-                hex.targetOpacity = hex.baseOpacity + Math.max(0, waveIntensity * 0.5) + mouseGlow * 1.5;
+                // Combinar wave, mouse glow e click wave glow (intensificado)
+                hex.targetOpacity = hex.baseOpacity + Math.max(0, waveIntensity * 0.5) + mouseGlow * 1.5 + clickWaveGlow;
+            }
+            
+            // Calcular efeito colorido se ativo
+            // Onda de cores desabilitada - usando apenas ondas de clique
+            // if (this.colorTransition > 0) {
+            //     const distanceToWaveCenter = Math.sqrt(
+            //         Math.pow(hex.x - this.waveCenter.x, 2) + 
+            //         Math.pow(hex.y - this.waveCenter.y, 2)
+            //     );
+            //     
+            //     // Efeito de onda circular mais amplo e visível
+            //     const waveDistance = Math.abs(distanceToWaveCenter - this.waveRadius);
+            //     const waveWidth = 200; // Largura da onda ainda maior
+            //     
+            //     if (waveDistance < waveWidth) {
+            //         const waveIntensity = (1 - waveDistance / waveWidth) * this.colorTransition;
+            //         hex.colorIntensity = Math.max(hex.colorIntensity || 0, waveIntensity * 0.8); // Reduzir intensidade
+            //     } else {
+            //         // Decaimento mais lento para manter o efeito visível por mais tempo
+            //         hex.colorIntensity = (hex.colorIntensity || 0) * 0.95;
+            //     }
+            //     
+            //     // Garantir intensidade mínima quando o modo está ativo (reduzida)
+            //     if (this.colorMode) {
+            //         hex.colorIntensity = Math.max(hex.colorIntensity || 0, 0.15);
+            //     }
+            // }
+            
+            // Aplicar efeito de cor das ondas de clique
+            if (this.colorMode) {
+                // Garantir intensidade mínima quando o modo colorido está ativo
+                hex.colorIntensity = Math.max(hex.colorIntensity || 0, 0.15);
+                
+                // Adicionar efeito de cor das ondas de clique no modo colorido
+                this.clickWaves.forEach(wave => {
+                    const clickDx = hex.x - wave.x;
+                    const clickDy = hex.y - wave.y;
+                    const clickDistance = Math.sqrt(clickDx * clickDx + clickDy * clickDy);
+                    
+                    const waveThickness = 60; // Espessura maior para efeito de cor
+                    const distanceFromWaveEdge = Math.abs(clickDistance - wave.radius);
+                    
+                    if (distanceFromWaveEdge < waveThickness) {
+                        const waveColorIntensity = (1 - distanceFromWaveEdge / waveThickness) * wave.intensity * 0.8;
+                        hex.colorIntensity = Math.max(hex.colorIntensity || 0, waveColorIntensity);
+                    }
+                });
+                
+                // Limitar intensidade máxima
+                hex.colorIntensity = Math.min(hex.colorIntensity || 0, 1);
+            } else {
+                // Mesmo no modo padrão, aplicar efeito de cor sutil das ondas de clique
+                let clickColorIntensity = 0;
+                this.clickWaves.forEach(wave => {
+                    const clickDx = hex.x - wave.x;
+                    const clickDy = hex.y - wave.y;
+                    const clickDistance = Math.sqrt(clickDx * clickDx + clickDy * clickDy);
+                    
+                    const waveThickness = 50;
+                    const distanceFromWaveEdge = Math.abs(clickDistance - wave.radius);
+                    
+                    if (distanceFromWaveEdge < waveThickness) {
+                        const waveColorIntensity = (1 - distanceFromWaveEdge / waveThickness) * wave.intensity * 0.3;
+                        clickColorIntensity = Math.max(clickColorIntensity, waveColorIntensity);
+                    }
+                });
+                
+                hex.colorIntensity = clickColorIntensity;
             }
             
             // Suavizar transições
@@ -440,7 +636,7 @@ class HexagonBackground {
         this.visibleHexagons.forEach(hex => {
             // Usar o tamanho individual do hexágono se disponível, senão usar o padrão
             const hexSize = hex.size || this.hexSize;
-            this.drawHexagon(hex.x, hex.y, hexSize, hex.opacity, hex.glowIntensity);
+            this.drawHexagon(hex.x, hex.y, hexSize, hex.opacity, hex.glowIntensity, hex);
         });
     }
     
@@ -451,6 +647,7 @@ class HexagonBackground {
         // Limitar FPS
         if (deltaTime >= this.frameInterval) {
             this.updateHexagons();
+            this.updateClickWaves(deltaTime); // Atualizar ondas de clique com deltaTime
             this.render();
             this.lastFrameTime = now - (deltaTime % this.frameInterval);
             
@@ -600,6 +797,80 @@ class HexagonBackground {
         }
     }
     
+    activateColorEffect(centerX, centerY) {
+        // Throttling para evitar cliques muito rápidos
+        const now = performance.now();
+        if (this.lastColorEffectTime && now - this.lastColorEffectTime < 300) {
+            return; // Ignorar cliques muito rápidos
+        }
+        this.lastColorEffectTime = now;
+        
+        // Toggle do modo colorido
+        this.colorMode = !this.colorMode;
+        
+        if (this.colorMode) {
+            // Converter coordenadas da tela para coordenadas do canvas
+            const rect = this.canvas.getBoundingClientRect();
+            this.waveCenter.x = centerX - rect.left;
+            this.waveCenter.y = centerY - rect.top;
+            this.waveRadius = 0;
+            
+            // Randomizar fases de cor de forma otimizada (apenas hexágonos visíveis)
+            this.visibleHexagons.forEach(hex => {
+                hex.colorPhase = Math.random() * Math.PI * 2;
+            });
+            
+            console.log('Efeito colorido ativado em:', this.waveCenter);
+        } else {
+            // Resetar intensidades de cor de forma otimizada (apenas hexágonos visíveis)
+            this.visibleHexagons.forEach(hex => {
+                hex.colorIntensity = 0;
+            });
+            
+            console.log('Efeito colorido desativado');
+        }
+    }
+    
+    createClickWave(x, y) {
+        // Remover ondas antigas se exceder o limite
+        if (this.clickWaves.length >= this.maxClickWaves) {
+            this.clickWaves.shift(); // Remove a onda mais antiga
+        }
+        
+        // Criar nova onda
+        const wave = {
+            x: x,
+            y: y,
+            radius: 0,
+            intensity: this.clickWaveIntensity,
+            maxRadius: this.clickWaveMaxRadius,
+            speed: this.clickWaveSpeed,
+            startTime: performance.now()
+        };
+        
+        this.clickWaves.push(wave);
+    }
+    
+    updateClickWaves(deltaTime = 16) {
+        // Atualizar todas as ondas de clique
+        for (let i = this.clickWaves.length - 1; i >= 0; i--) {
+            const wave = this.clickWaves[i];
+            
+            // Expandir a onda com base no deltaTime para suavidade
+            const speedMultiplier = deltaTime / 16; // Normalizar para 60fps
+            wave.radius += wave.speed * speedMultiplier;
+            
+            // Reduzir intensidade conforme a onda se expande com curva suave
+            const progress = Math.min(wave.radius / wave.maxRadius, 1);
+            wave.intensity = this.clickWaveIntensity * Math.pow(1 - progress, 2); // Curva quadrática para fade suave
+            
+            // Remover onda se ela atingiu o raio máximo
+            if (wave.radius >= wave.maxRadius) {
+                this.clickWaves.splice(i, 1);
+            }
+        }
+    }
+    
     destroy() {
         this.stopAnimation();
         
@@ -639,6 +910,79 @@ if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initHexagonBackground);
 } else {
     initHexagonBackground();
+}
+
+// Adicionar event listener para a logo da hero section
+function setupHeroLogoInteraction() {
+    const heroLogo = document.querySelector('.hero-logo');
+    if (heroLogo && hexagonBackground) {
+        heroLogo.addEventListener('click', function(event) {
+            // Usar centro da tela para a onda
+            const centerX = window.innerWidth / 2;
+            const centerY = window.innerHeight / 2;
+            
+            // Ativar efeito colorido
+            hexagonBackground.activateColorEffect(centerX, centerY);
+            
+            // Criar onda de clique no centro da tela
+            hexagonBackground.createClickWave(centerX, centerY);
+            
+            // Adicionar feedback visual na logo
+            heroLogo.style.transform = 'scale(1.1)';
+            setTimeout(() => {
+                heroLogo.style.transform = '';
+            }, 200);
+        });
+        
+        // Adicionar cursor pointer para indicar interatividade
+        heroLogo.style.cursor = 'pointer';
+        heroLogo.title = 'Clique para ativar efeito colorido no background';
+    }
+}
+
+// Adicionar event listener para a logo da navbar
+function setupNavLogoInteraction() {
+    const navLogo = document.querySelector('#nav-logo-effect');
+    if (navLogo && hexagonBackground) {
+        navLogo.addEventListener('click', function(event) {
+            event.preventDefault();
+            
+            // Usar centro da tela para a onda
+            const centerX = window.innerWidth / 2;
+            const centerY = window.innerHeight / 2;
+            
+            // Ativar efeito colorido
+            hexagonBackground.activateColorEffect(centerX, centerY);
+            
+            // Criar onda de clique no centro da tela
+            hexagonBackground.createClickWave(centerX, centerY);
+            
+            // Adicionar feedback visual na logo
+            navLogo.style.transform = 'scale(1.1)';
+            setTimeout(() => {
+                navLogo.style.transform = '';
+            }, 200);
+        });
+        
+        // Adicionar cursor pointer para indicar interatividade
+        navLogo.style.cursor = 'pointer';
+        navLogo.title = 'Clique para ativar efeito colorido no background';
+    }
+}
+
+// Setup da interação após inicialização
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        setTimeout(() => {
+            setupHeroLogoInteraction();
+            setupNavLogoInteraction();
+        }, 100); // Pequeno delay para garantir inicialização
+    });
+} else {
+    setTimeout(() => {
+        setupHeroLogoInteraction();
+        setupNavLogoInteraction();
+    }, 100);
 }
 
 // Handle page visibility for performance

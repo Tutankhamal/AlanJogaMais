@@ -171,6 +171,13 @@ class RoletaCompacta {
         this.isPaused = false;
         this.startTime = Date.now() - this.pausedTime;
         
+        // Ativar modo colorido dos hexágonos
+        if (typeof hexagonBackground !== 'undefined' && hexagonBackground) {
+            if (!hexagonBackground.colorMode) {
+                hexagonBackground.activateColorEffect(window.innerWidth / 2, window.innerHeight / 2);
+            }
+        }
+        
         // Atualizar interface
         this.iniciarBtn.disabled = true;
         this.pausarBtn.disabled = false;
@@ -283,6 +290,13 @@ class RoletaCompacta {
         if (this.audioFundo) {
             this.audioFundo.pause();
             this.audioFundo.currentTime = 0;
+        }
+        
+        // Desativar modo colorido dos hexágonos
+        if (typeof hexagonBackground !== 'undefined' && hexagonBackground) {
+            if (hexagonBackground.colorMode) {
+                hexagonBackground.activateColorEffect(window.innerWidth / 2, window.innerHeight / 2);
+            }
         }
         
         // Sortear vencedor
