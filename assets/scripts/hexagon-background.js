@@ -305,7 +305,13 @@ class HexagonBackground {
                     colorPhase: Math.random() * Math.PI * 2, // Fase inicial aleatória
                     colorIntensity: 0,
                     waveDelay: Math.random() * Math.PI * 2,
-                    baseColor: this.getRandomBaseColor() // Cor base variada
+                    baseColor: this.getRandomBaseColor(), // Cor base variada
+                    // Propriedades para efeito glitch cyberpunk
+                    baseX: x, // Posição original X
+                    baseY: y, // Posição original Y
+                    glitchOffsetX: 0, // Offset de distorção X
+                    glitchOffsetY: 0, // Offset de distorção Y
+                    glitchTimer: Math.random() * Math.PI * 2 // Timer para animação de glitch
                 });
             }
         }
@@ -591,17 +597,20 @@ class HexagonBackground {
                 }
             });
             
-            // Sistema de piscadas aleatórias
-            if (!hex.isBlinking && Math.random() < this.blinkChance) {
+            // Sistema de piscadas aleatórias - moderadamente intensificado no modo colorido
+            const cyberpunkBlinkChance = this.colorMode ? this.blinkChance * 3 : this.blinkChance; // 3x mais glitches no modo colorido (reduzido)
+            if (!hex.isBlinking && Math.random() < cyberpunkBlinkChance) {
                 hex.isBlinking = true;
                 hex.blinkTimer = 0;
-                hex.blinkIntensity = 0.4 + Math.random() * 0.4;
+                // Intensidade ligeiramente maior no modo colorido
+                hex.blinkIntensity = this.colorMode ? (0.5 + Math.random() * 0.4) : (0.4 + Math.random() * 0.4);
             }
             
-            // Atualizar piscada
+            // Atualizar piscada - brilho aumentado no modo colorido
             if (hex.isBlinking) {
-                hex.blinkTimer += 0.1;
-                const blinkCycle = Math.sin(hex.blinkTimer * 8) * hex.blinkIntensity * 0.5;
+                hex.blinkTimer += 0.1; // Velocidade normal
+                const blinkMultiplier = this.colorMode ? 1.0 : 0.5; // Brilho dobrado no modo colorido
+                const blinkCycle = Math.sin(hex.blinkTimer * 8) * hex.blinkIntensity * blinkMultiplier;
                 hex.targetOpacity = hex.baseOpacity + Math.max(0, blinkCycle);
                 
                 if (hex.blinkTimer > Math.PI / 4) {
@@ -610,8 +619,12 @@ class HexagonBackground {
                 }
             } else {
                 // Combinar wave, mouse glow e click wave glow (intensificado)
-                hex.targetOpacity = hex.baseOpacity + Math.max(0, waveIntensity * 0.5) + mouseGlow * 1.5 + clickWaveGlow;
+                hex.targetOpacity = hex.baseOpacity + Math.max(0, waveIntensity * 0.5) + mouseGlow * 0.8 + clickWaveGlow;
             }
+            
+            // Manter posição original dos hexágonos (sem distorção)
+            hex.x = hex.baseX;
+            hex.y = hex.baseY;
             
             // Calcular efeito colorido se ativo
             // Onda de cores desabilitada - usando apenas ondas de clique
@@ -683,7 +696,9 @@ class HexagonBackground {
             
             // Suavizar transições
             hex.currentOpacity += (hex.targetOpacity - hex.currentOpacity) * 0.1;
-            hex.opacity = Math.max(hex.currentOpacity, hex.baseOpacity * 0.5);
+            // Permitir brilho total no modo colorido, manter limitação no modo normal
+            const minOpacity = this.colorMode ? hex.baseOpacity * 0.3 : hex.baseOpacity * 0.5;
+            hex.opacity = Math.max(hex.currentOpacity, minOpacity);
             hex.glowIntensity = Math.max(0, hex.currentOpacity - hex.baseOpacity);
         });
     }
