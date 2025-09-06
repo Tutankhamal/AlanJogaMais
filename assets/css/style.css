@@ -1273,6 +1273,44 @@ body {
 }
 
 /* ===== RESPONSIVIDADE ===== */
+/* Breakpoint para tablets grandes e telas médias */
+@media (max-width: 1024px) {
+    .nav-menu {
+        gap: 1.5rem;
+    }
+    
+    .nav-link {
+        padding: 10px 16px;
+        font-size: 0.85rem;
+    }
+    
+    .nav-container {
+        padding: 0 15px;
+    }
+}
+
+/* Breakpoint para tablets pequenos */
+@media (max-width: 900px) {
+    .nav-menu {
+        gap: 1rem;
+    }
+    
+    .nav-link {
+        padding: 8px 12px;
+        font-size: 0.8rem;
+    }
+    
+    .nav-brand {
+        font-size: 1.4rem;
+    }
+    
+    .nav-logo img {
+        width: 40px;
+        height: 40px;
+    }
+}
+
+/* Breakpoint para conversão em menu hambúrguer */
 @media (max-width: 768px) {
     .nav-menu {
         position: fixed;
