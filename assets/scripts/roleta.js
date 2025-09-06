@@ -21,6 +21,7 @@ class RoletaCompacta {
         this.initializeElements();
         this.bindEvents();
         this.updateTimeValue();
+        this.updateNomes();
     }
     
     initializeElements() {
@@ -88,8 +89,10 @@ class RoletaCompacta {
         // Atualizar mensagem se não estiver rodando
         if (!this.isRunning) {
             if (count === 0) {
+                this.displayElement.classList.add('matrix-mode');
                 this.messageElement.innerHTML = '<span class="glitch-text">AGUARDANDO NOMES</span>';
             } else {
+                this.displayElement.classList.add('matrix-mode');
                 this.messageElement.innerHTML = `<span class="glitch-text">PRONTO! ${count} LINHA${count !== 1 ? 'S' : ''}</span>`;
             }
         }
@@ -245,6 +248,7 @@ class RoletaCompacta {
             }
             
             // Mostrar mensagem de pausa
+            this.displayElement.classList.add('matrix-mode');
             this.messageElement.innerHTML = '<span class="glitch-text">SORTEIO PAUSADO</span>';
         }
     }
@@ -306,8 +310,8 @@ class RoletaCompacta {
         const nomeExibido = vencedor.length > 12 ? vencedor.substring(0, 12) + '...' : vencedor;
         
         // Atualizar interface
-        this.displayElement.classList.remove('matrix-mode');
-        this.messageElement.innerHTML = `<span class="glitch-text">🎉 ${nomeExibido.toUpperCase()} 🎉</span>`;
+        this.displayElement.classList.add('matrix-mode');
+        this.messageElement.innerHTML = `<span class="glitch-text">*** ${nomeExibido.toUpperCase()} ***</span>`;
         
         this.iniciarBtn.disabled = false;
         this.pausarBtn.disabled = true;
